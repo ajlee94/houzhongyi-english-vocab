@@ -11,3 +11,4 @@
 - GitHub Pages 讀取根目錄 `index.html`。
 - App 題庫資料從 `data/114_cmu_english_vocab.csv` 讀取。
 - Apps Script / Google Sheets 只負責同步學習進度與題庫清單，不再承擔題庫內容來源。
+- 114 內建題庫的同步 key 沿用舊 Google Sheet 題庫 URL，讓既有雲端進度可以接上。

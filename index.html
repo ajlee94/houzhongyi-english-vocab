@@ -521,8 +521,9 @@ const APP_DECKS_INDEX_KEY='flashcard_decks_index_v1';
 const APP_DECKS_META_KEY='flashcard_decks_meta_v1';
 const ACTIVE_DECK_ID_KEY='flashcard_active_deck_id_v1';
 const CLOUD_SYNC_CONFIG_KEY='flashcard_cloud_sync_config_v1';
+const LEGACY_CMU_114_DECK_KEY='https://docs.google.com/spreadsheets/d/1BOtOw0nd5cPhXiiG6enA0Pu8wpIhYVz9UGSTgbObISc/edit#gid=1636987939';
 const BUILT_IN_DECKS=[
-  {id:'builtin_cmu_114', name:'中國醫 114 英文單字庫', url:'data/114_cmu_english_vocab.csv', normalizedUrl:'data/114_cmu_english_vocab.csv', cloudDeckKey:'data/114_cmu_english_vocab.csv', type:'csv', createdAt:'2026-05-06T00:00:00.000Z', updatedAt:'2026-05-06T00:00:00.000Z', lastSyncedAt:'', totalWords:381, totalGroups:0, builtIn:true}
+  {id:'builtin_cmu_114', name:'中國醫 114 英文單字庫', url:'data/114_cmu_english_vocab.csv', normalizedUrl:'data/114_cmu_english_vocab.csv', cloudDeckKey:LEGACY_CMU_114_DECK_KEY, type:'csv', createdAt:'2026-05-06T00:00:00.000Z', updatedAt:'2026-05-06T00:00:00.000Z', lastSyncedAt:'', totalWords:381, totalGroups:0, builtIn:true}
 ];
 const RETIRED_BUILT_IN_DECK_KEYS=new Set([
   'builtin_cmu_112',
@@ -837,8 +838,15 @@ function ensureBuiltInDecks({markUpdated=false, autoPush=false}={}){
   BUILT_IN_DECKS.forEach(deck=>{
     const key=String(deck.cloudDeckKey || deck.url || deck.id).trim();
     const id=String(deck.id||'').trim();
-    const hasDeck=decks.some(existing=>String(existing?.id||'')===id || String(existing?.cloudDeckKey||existing?.normalizedUrl||existing?.url||'').trim()===key);
-    if(!hasDeck && !existingKeys.has(key)){
+    const existingIndex=decks.findIndex(existing=>String(existing?.id||'')===id || String(existing?.cloudDeckKey||existing?.normalizedUrl||existing?.url||'').trim()===key);
+    if(existingIndex>=0){
+      const current=normalizeDeckMeta(decks[existingIndex]);
+      const next=normalizeDeckMeta({...current, ...deck, lastSyncedAt:current?.lastSyncedAt||deck.lastSyncedAt, totalWords:current?.totalWords||deck.totalWords, totalGroups:current?.totalGroups||deck.totalGroups});
+      if(JSON.stringify(current)!==JSON.stringify(next)){
+        decks[existingIndex]=next;
+        changed=true;
+      }
+    }else if(!existingKeys.has(key)){
       decks.push(normalizeDeckMeta(deck));
       existingKeys.add(key);
       changed=true;
@@ -1879,7 +1887,7 @@ async function loadDeckById(id,{forceSync=false, requestSeq=null}={}){
       statusText.textContent=`正在同步題庫：${deck.name}`;
       const result=await fetchDeckCsv(deck.url);
       if(activeRequestSeq !== deckLoadRequestSeq) return;
-      currentDeckMeta=normalizeDeckMeta({...deck, url:result.normalized || deck.url, normalizedUrl:result.normalized, cloudDeckKey:buildStableCloudDeckKey(result.normalized || deck.url), type:isGoogleSheetUrl(deck.url)?'google_sheet':'csv', lastSyncedAt:new Date().toISOString()});
+      currentDeckMeta=normalizeDeckMeta({...deck, url:result.normalized || deck.url, normalizedUrl:result.normalized || deck.normalizedUrl || deck.url, cloudDeckKey:deck.cloudDeckKey || buildStableCloudDeckKey(result.normalized || deck.url), type:isGoogleSheetUrl(deck.url)?'google_sheet':'csv', lastSyncedAt:new Date().toISOString()});
       upsertCurrentDeckMeta();
       startApp(result.parsed,'網址同步成功');
     }catch(err){

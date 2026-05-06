@@ -36,3 +36,5 @@
 GitHub Pages 設定建議使用 repository root，讓 Pages 直接讀取根目錄 `index.html`。
 
 目前部署架構為：GitHub Pages 放 App 與題庫 CSV，Apps Script / Google Sheets 只負責進度同步。
+
+114 內建題庫的內容從 GitHub CSV 讀取，但同步進度 key 沿用舊 114 Google Sheet 題庫 URL，讓既有雲端進度可以接上。
