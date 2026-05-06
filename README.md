@@ -30,7 +30,7 @@
 
 - `index.html`：英文單字卡 GitHub Pages 入口，以 `英文0/APP/英文單字卡_多裝置同步版_v17.html` 為功能基準，已加入深色介面、內建同步設定與內建 CSV 題庫。
 - `output/github-pages/`：發布備份與說明，含 `apps-script/Code.gs` 同步後端備份。
-- `data/`：GitHub Pages 版內建 CSV 題庫，目前包含中國醫 112、113、114 英文單字庫。
+- `data/`：GitHub Pages 版內建 CSV 題庫，目前只保留中國醫 114 自建英文單字庫。
 - `apps-script/Code.gs`：多裝置進度同步後端備份；GitHub Pages 只讀題庫 CSV，Apps Script 只負責同步學習進度。
 
 GitHub Pages 設定建議使用 repository root，讓 Pages 直接讀取根目錄 `index.html`。

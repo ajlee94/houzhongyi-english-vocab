@@ -522,10 +522,14 @@ const APP_DECKS_META_KEY='flashcard_decks_meta_v1';
 const ACTIVE_DECK_ID_KEY='flashcard_active_deck_id_v1';
 const CLOUD_SYNC_CONFIG_KEY='flashcard_cloud_sync_config_v1';
 const BUILT_IN_DECKS=[
-  {id:'builtin_cmu_112', name:'中國醫 112 英文單字庫', url:'data/112_cmu_english_vocab.csv', normalizedUrl:'data/112_cmu_english_vocab.csv', cloudDeckKey:'data/112_cmu_english_vocab.csv', type:'csv', createdAt:'2026-05-06T00:00:00.000Z', updatedAt:'2026-05-06T00:00:00.000Z', lastSyncedAt:'', totalWords:581, totalGroups:0, builtIn:true},
-  {id:'builtin_cmu_113', name:'中國醫 113 英文單字庫', url:'data/113_cmu_english_vocab.csv', normalizedUrl:'data/113_cmu_english_vocab.csv', cloudDeckKey:'data/113_cmu_english_vocab.csv', type:'csv', createdAt:'2026-05-06T00:00:00.000Z', updatedAt:'2026-05-06T00:00:00.000Z', lastSyncedAt:'', totalWords:479, totalGroups:0, builtIn:true},
   {id:'builtin_cmu_114', name:'中國醫 114 英文單字庫', url:'data/114_cmu_english_vocab.csv', normalizedUrl:'data/114_cmu_english_vocab.csv', cloudDeckKey:'data/114_cmu_english_vocab.csv', type:'csv', createdAt:'2026-05-06T00:00:00.000Z', updatedAt:'2026-05-06T00:00:00.000Z', lastSyncedAt:'', totalWords:381, totalGroups:0, builtIn:true}
 ];
+const RETIRED_BUILT_IN_DECK_KEYS=new Set([
+  'builtin_cmu_112',
+  'builtin_cmu_113',
+  'data/112_cmu_english_vocab.csv',
+  'data/113_cmu_english_vocab.csv'
+]);
 const DEFAULT_DAILY_NEW_LIMIT=0;
 const MAX_DAILY_NEW_LIMIT=30;
 const DAILY_LIMIT_STEP=5;
@@ -818,8 +822,18 @@ function normalizeDeckMeta(deck){
 }
 function ensureBuiltInDecks({markUpdated=false, autoPush=false}={}){
   if(!Array.isArray(decks)) decks=[];
+  const beforePruneLength=decks.length;
+  decks=decks.filter(deck=>{
+    const keys=[
+      String(deck?.id||'').trim(),
+      String(deck?.cloudDeckKey||'').trim(),
+      String(deck?.normalizedUrl||'').trim(),
+      String(deck?.url||'').trim()
+    ].filter(Boolean);
+    return !keys.some(key=>RETIRED_BUILT_IN_DECK_KEYS.has(key));
+  });
   const existingKeys=new Set(decks.map(deck=>String(deck?.cloudDeckKey || deck?.normalizedUrl || deck?.url || deck?.id || '').trim()).filter(Boolean));
-  let changed=false;
+  let changed=decks.length!==beforePruneLength;
   BUILT_IN_DECKS.forEach(deck=>{
     const key=String(deck.cloudDeckKey || deck.url || deck.id).trim();
     const id=String(deck.id||'').trim();
