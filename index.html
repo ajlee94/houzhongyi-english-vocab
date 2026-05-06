@@ -274,6 +274,7 @@ input[type="file"]{
 .word-list-word{color:#f4fbff}
 .word-list-item.is-difficult{border-color:#d99a6b;box-shadow:0 0 0 2px rgba(194,124,44,.12) inset}
 .modal-overlay{background:rgba(3,8,12,.72);backdrop-filter:blur(4px)}
+.cloud-sync-section{display:none}
 
 @media (max-width:700px){
   .wrap{padding:18px 12px 38px}
@@ -356,7 +357,7 @@ input[type="file"]{
           <div id="deckMetaText" class="deck-meta">尚未建立題庫。可貼上 CSV / Google Sheets 網址並新增題庫。</div>
         </div>
 
-        <div class="manage-section">
+        <div class="manage-section cloud-sync-section">
           <div class="manage-section-title">雲端同步</div>
           <div class="deck-grid">
             <input id="cloudScriptUrlInput" type="text" placeholder="貼上 Google Apps Script Web App 網址" class="wide" />
@@ -521,9 +522,9 @@ const APP_DECKS_INDEX_KEY='flashcard_decks_index_v1';
 const APP_DECKS_META_KEY='flashcard_decks_meta_v1';
 const ACTIVE_DECK_ID_KEY='flashcard_active_deck_id_v1';
 const CLOUD_SYNC_CONFIG_KEY='flashcard_cloud_sync_config_v1';
-const LEGACY_CMU_114_DECK_KEY='https://docs.google.com/spreadsheets/d/1BOtOw0nd5cPhXiiG6enA0Pu8wpIhYVz9UGSTgbObISc/edit#gid=1636987939';
+const CLOUD_SYNC_DISABLED=true;
 const BUILT_IN_DECKS=[
-  {id:'builtin_cmu_114', name:'中國醫 114 英文單字庫', url:'data/114_cmu_english_vocab.csv', normalizedUrl:'data/114_cmu_english_vocab.csv', cloudDeckKey:LEGACY_CMU_114_DECK_KEY, type:'csv', createdAt:'2026-05-06T00:00:00.000Z', updatedAt:'2026-05-06T00:00:00.000Z', lastSyncedAt:'', totalWords:381, totalGroups:0, builtIn:true}
+  {id:'builtin_cmu_114', name:'中國醫 114 英文單字庫', url:'data/114_cmu_english_vocab.csv', normalizedUrl:'data/114_cmu_english_vocab.csv', cloudDeckKey:'data/114_cmu_english_vocab.csv', type:'csv', createdAt:'2026-05-06T00:00:00.000Z', updatedAt:'2026-05-06T00:00:00.000Z', lastSyncedAt:'', totalWords:381, totalGroups:0, builtIn:true}
 ];
 const RETIRED_BUILT_IN_DECK_KEYS=new Set([
   'builtin_cmu_112',
@@ -589,7 +590,7 @@ function getDailyRemainingQuota(){ return Math.max(0, getDailyCap() - getTodayAd
 function getNewPoolRemainingQuota(){ return Math.max(0, getDailyCap() - getActiveNewPoolCount()); }
 function getAddableNewWordCount(){ return Math.max(0, Math.min(getDailyRemainingQuota(), getNewPoolRemainingQuota())); }
 function defaultDeckRegistryMeta(){ return {updatedAt:''}; }
-function defaultCloudConfig(){ return {scriptUrl:'https://script.google.com/macros/s/AKfycbyhK5odtV6a13q3m0RHOA4gyMaW2Y9LS1RuOB26p34v7_bq2Jv0drGdbcuKWp10PwZe/exec', userKey:'aj_vocab', lastPushAt:'', lastPullAt:''}; }
+function defaultCloudConfig(){ return {scriptUrl:'', userKey:'', lastPushAt:'', lastPullAt:''}; }
 function defaultSyncMeta(){ return {dirty:false,autoPushBlocked:false,blockReason:''}; }
 function currentDeckDataKey(){ return currentDeckId ? `deck_data_${currentDeckId}` : ''; }
 function currentDeckSyncMetaKey(){ return currentDeckId ? `deck_sync_meta_${currentDeckId}` : ''; }
@@ -649,6 +650,7 @@ function persistDeckRegistryLocal({markUpdated=false, autoPush=true}={}){
   if(autoPush && hasCloudDeckIndexConfig()) scheduleCloudDeckIndexAutoPush();
 }
 function hasCloudDeckIndexConfig(){
+  if(CLOUD_SYNC_DISABLED) return false;
   const scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
   const userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
   return !!(scriptUrl && userKey);
@@ -785,6 +787,12 @@ function buildStateFromSource(sourceState){
   };
 }
 function updateCloudMetaText(){
+  if(CLOUD_SYNC_DISABLED){
+    if(cloudScriptUrlInput) cloudScriptUrlInput.value='';
+    if(cloudUserKeyInput) cloudUserKeyInput.value='';
+    if(cloudMetaText) cloudMetaText.textContent='GitHub 版已取消 Apps Script 同步；題庫資料直接由 GitHub CSV 提供，學習進度只保存在目前瀏覽器。';
+    return;
+  }
   if(cloudScriptUrlInput) cloudScriptUrlInput.value=cloudConfig.scriptUrl||'';
   if(cloudUserKeyInput) cloudUserKeyInput.value=cloudConfig.userKey||'';
   const urlText=cloudConfig.scriptUrl ? cloudConfig.scriptUrl : '尚未設定';
@@ -863,11 +871,16 @@ function getCloudDeckName(){
   return String(currentDeckMeta?.name || currentDeckId || '').trim();
 }
 function hasCloudSyncConfig(){
+  if(CLOUD_SYNC_DISABLED) return false;
   const scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
   const userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
   return !!(words.length && currentDeckId && scriptUrl && userKey);
 }
 function ensureCloudReady(){
+  if(CLOUD_SYNC_DISABLED){
+    alert('GitHub 版已取消 Apps Script 同步；請直接修改 GitHub data/114_cmu_english_vocab.csv 來更新題庫。');
+    return false;
+  }
   if(!words.length || !currentDeckId){
     alert('請先載入題庫。');
     return false;

@@ -28,13 +28,10 @@
 
 ## GitHub Pages App
 
-- `index.html`：英文單字卡 GitHub Pages 入口，以 `英文0/APP/英文單字卡_多裝置同步版_v17.html` 為功能基準，已加入深色介面、內建同步設定與內建 CSV 題庫。
-- `output/github-pages/`：發布備份與說明，含 `apps-script/Code.gs` 同步後端備份。
+- `index.html`：英文單字卡 GitHub Pages 入口，以 `英文0/APP/英文單字卡_多裝置同步版_v17.html` 為功能基準，已加入深色介面與內建 CSV 題庫，並已取消 Apps Script 同步。
+- `output/github-pages/`：發布備份與說明。
 - `data/`：GitHub Pages 版內建 CSV 題庫，目前只保留中國醫 114 自建英文單字庫。
-- `apps-script/Code.gs`：多裝置進度同步後端備份；GitHub Pages 只讀題庫 CSV，Apps Script 只負責同步學習進度。
 
 GitHub Pages 設定建議使用 repository root，讓 Pages 直接讀取根目錄 `index.html`。
 
-目前部署架構為：GitHub Pages 放 App 與題庫 CSV，Apps Script / Google Sheets 只負責進度同步。
-
-114 內建題庫的內容從 GitHub CSV 讀取，但同步進度 key 沿用舊 114 Google Sheet 題庫 URL，讓既有雲端進度可以接上。
+目前部署架構為：GitHub Pages 放 App 與題庫 CSV。題庫更新直接修改 `data/114_cmu_english_vocab.csv` 後推送到 GitHub；學習進度只保存在目前瀏覽器。
