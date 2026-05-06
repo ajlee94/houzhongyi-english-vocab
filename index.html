@@ -2115,8 +2115,9 @@ async function bootstrap(){
   await reconcileCloudDeckIndex({silent:true});
   renderDeckSelect();
   const activeId=loadActiveDeckId();
-  if(activeId && getDeckById(activeId)){
-    await loadDeckById(activeId);
+  const initialDeckId=(activeId && getDeckById(activeId)) ? activeId : (decks.length===1 ? decks[0].id : '');
+  if(initialDeckId){
+    await loadDeckById(initialDeckId);
   }else{
     clearCardUI();
     syncMeta=defaultSyncMeta();
