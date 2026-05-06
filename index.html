@@ -1,0 +1,2100 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>單字卡 APP</title>
+<style>
+:root{--bg:#f5f6fb;--card:#fff;--muted:#8b90a0;--text:#1f2330;--border:#e8eaf2;--primary:#6d63ff;--shadow:0 10px 30px rgba(35,42,70,.08)}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"Noto Sans TC","Microsoft JhengHei",sans-serif;background:linear-gradient(180deg,#081224 0%, #0b1730 100%);color:var(--text)}
+.wrap{max-width:980px;margin:0 auto;padding:22px 18px 40px}
+.panel,.card-shell{background:#12203f;border-radius:22px;box-shadow:var(--shadow);padding:18px;margin-bottom:18px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+input[type="file"]{color:#eef4ff;background:#182a52;border:1px solid #2c4477;border-radius:12px;padding:10px 12px}
+button{border:none;border-radius:16px;padding:13px 18px;font-size:15px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+
+.card,
+button,
+.seen-action-btn,
+.nav-btn,
+.speak,
+.difficult-toggle {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card {
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+.btn-secondary{background:#21355f;color:#eef4ff}
+.status{margin-top:12px;color:#a9c1ff;font-size:14px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+.top-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.statbox{background:#182a52;border:1px solid #2c4477;border-radius:16px;padding:12px 14px}
+.statbox .label{font-size:13px;color:#a9b8d8;font-weight:800;margin-bottom:6px}
+.statbox .value{font-size:24px;font-weight:800;color:#f7fbff;text-shadow:0 1px 0 rgba(0,0,0,.18)}
+.progressbar{height:12px;background:#20365f;border-radius:999px;overflow:hidden;margin-top:12px}
+.progressbar>div{width:0%;height:100%;background:linear-gradient(90deg,#8a7dff,#a79bff);transition:width .2s}
+.card-shell{position:relative}
+.card-area{position:relative;padding:0 20px}
+.card{position:relative;min-height:680px;border-radius:24px;border:none;background:#16264b;overflow:hidden;cursor:pointer;width:100%}
+.card-progress-text{position:absolute;top:14px;left:16px;color:#cfe0ff;font-size:14px;font-weight:700;z-index:10;pointer-events:none}
+
+
+.card-face{position:absolute;inset:0;padding:18px 22px 90px;display:flex;flex-direction:column;justify-content:center;align-items:center}.front-face-layout{display:grid;grid-template-rows:1fr auto auto;align-items:stretch;justify-items:center;padding:18px 22px 22px}.front-top{align-self:center;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%}.front-bottom-actions{align-self:end;margin-top:0;margin-bottom:42px;width:min(420px, calc(100% - 40px))}.front-bottom-actions .seen-action-btn{flex:0 0 180px;width:180px}.hint{position:static;text-align:center;color:#a9b8d8;font-size:14px;font-weight:700;align-self:end}.difficult-toggle{position:absolute;top:14px;right:14px;background:#2a3f68;color:#dbe7ff;border:1px solid #4b679e;padding:6px 12px;font-size:12px;border-radius:999px;z-index:9;box-shadow:0 6px 16px rgba(0,0,0,.2)}.difficult-toggle.is-on{background:#cf4b4b;color:#fff;border-color:#e17474}.quick-face-layout{display:grid;grid-template-rows:1fr auto;align-items:stretch;justify-items:center;padding:18px 22px 22px}.quick-top{align-self:center;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%}.quick-bottom-actions{align-self:end;margin-top:0;margin-bottom:42px;width:min(420px, calc(100% - 40px))}.quick-bottom-actions .seen-action-btn{flex:0 0 180px;width:180px}
+.hidden{display:none !important}.action-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px}.quick-action-row,.back-action-row{margin-top:22px}.nav-btn{width:46px;height:46px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:rgba(26,45,86,.92);border:1px solid #35518a;color:#c7d8ff;font-size:22px;box-shadow:var(--shadow);padding:0;flex:0 0 auto}.seen-action-btn{background:#8fb6ff;color:#10234a;padding:15px 22px;font-size:15px;border-radius:18px;box-shadow:0 10px 24px rgba(0,0,0,.22);font-weight:800;width:180px;min-width:180px;max-width:180px;text-align:center;white-space:nowrap}.front-seen-wrap,.quick-seen-wrap,.back-seen-wrap{display:flex;justify-content:center;margin-top:18px}.front-seen-wrap{position:static;transform:none;width:auto;margin-top:18px}@media (max-width:700px){.action-row{gap:10px;margin-top:34px}.nav-btn{width:40px;height:40px;font-size:18px}.seen-action-btn{padding:14px 18px;font-size:14px}}
+.front-word{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
+.word{font-size:clamp(42px,7vw,86px);line-height:1.15;font-weight:800;text-align:center;word-break:break-word;color:#f7fbff}
+.front-phonetic{margin-top:12px;font-size:clamp(18px,2.8vw,28px);color:#b7c8ea;font-weight:700;text-align:center}
+.speak{background:transparent;color:var(--primary);padding:0;font-size:clamp(28px,4vw,38px);text-shadow:0 0 12px rgba(126,166,255,.25)}.front-seen-wrap,.quick-seen-wrap,.back-seen-wrap{display:flex;justify-content:center;margin-top:18px}.seen-action-btn{background:#8fb6ff;color:#10234a;padding:15px 22px;font-size:15px;border-radius:18px;box-shadow:0 10px 24px rgba(0,0,0,.22);font-weight:800;width:180px;min-width:180px;max-width:180px;text-align:center;white-space:nowrap}
+.hint{position:absolute;bottom:26px;left:0;right:0;text-align:center;color:#a9b8d8;font-size:14px;font-weight:700}
+.quick-inner{width:100%;max-width:720px;margin:0 auto;display:grid;gap:14px;padding-top:8px}
+.quick-title{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px}
+.quick-block{background:#182a52;border:1px solid #2c4477;border-radius:16px;padding:16px 18px;width:100%}
+.quick-label{color:#a9b8d8;font-size:13px;font-weight:800;margin-bottom:6px}
+.quick-value{font-size:22px;line-height:1.7;word-break:break-word;white-space:pre-wrap;color:#eef4ff}
+.back-face{align-items:stretch;justify-content:flex-start;overflow:hidden;padding:0}
+.back-inner{width:100%;max-width:720px;margin:0 auto;display:grid;gap:12px;padding:0 0 12px}
+.back-title{display:flex;align-items:center;justify-content:center;gap:10px;margin:0}.back-header{flex:0 0 auto;padding:18px 22px 8px;background:#16264b;border-bottom:1px solid #2c4477;position:relative;z-index:5}.back-scroll{flex:1 1 auto;overflow:auto;padding:12px 22px 28px}
+.back-word{font-size:clamp(30px,5vw,48px);font-weight:800;color:#f7fbff;text-shadow:0 1px 0 rgba(0,0,0,.15)}
+.field{background:#182a52;border:1px solid #2c4477;border-radius:16px;padding:12px 14px}
+.field .label{color:#a9b8d8;font-size:13px;font-weight:800;margin-bottom:6px}
+.field .value{font-size:18px;line-height:1.7;word-break:break-word;white-space:pre-wrap;color:#eef4ff}
+.example-row{display:flex;align-items:flex-start;gap:12px}
+.example-row .value{flex:1}
+.learn-btns{display:flex;gap:12px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.learn-btns button{background:#2c4f94;color:#f4f8ff}
+.learn-btns .seen{background:#6d63ff}
+.footer-note{text-align:center;margin-top:16px;color:#9fb0d3;font-size:13px;line-height:1.7}
+.hidden-input{display:none}
+.deck-grid{display:grid;grid-template-columns:1.2fr 1.6fr auto auto auto auto;gap:10px;align-items:center}
+.deck-grid input,.deck-grid select{width:100%;color:#eef4ff;background:#182a52;border:1px solid #2c4477;border-radius:12px;padding:12px 14px;font-size:14px}
+.deck-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.deck-meta{margin-top:10px;color:#a9c1ff;font-size:14px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+.home-start-wrap{display:flex;justify-content:center;margin-top:18px}.start-btn{background:linear-gradient(90deg,#8a7dff,#a79bff);color:#081224;padding:16px 28px;font-size:18px;min-width:220px}.start-btn:disabled{background:#21355f;color:#9fb0d3}.study-toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px}.study-title{color:#eef4ff;font-size:24px;font-weight:800}.study-subtitle{color:#a9c1ff;font-size:14px;line-height:1.6;margin-top:4px}.screen-hidden{display:none !important}
+@media (max-width:980px){.deck-grid{grid-template-columns:1fr 1fr 1fr;}.deck-grid .wide{grid-column:span 3}}
+@media (max-width:820px){ .top-grid{grid-template-columns:1fr} .deck-grid{grid-template-columns:1fr;} .deck-grid .wide{grid-column:auto}}
+@media (max-width:700px){.card{min-height:700px}.field .value,.quick-value{font-size:16px}.card-area{padding:0 6px}.card-face{padding:16px 16px 96px}.quick-inner,.back-inner{max-width:100%}.front-face-layout{padding:16px 16px 18px}.front-bottom-actions{width:calc(100% - 20px);margin-bottom:42px}.quick-face-layout{padding:16px 16px 18px}.quick-bottom-actions{width:calc(100% - 20px);margin-bottom:26px}.action-row{gap:10px;margin-top:18px}.seen-action-btn{width:140px;min-width:140px;max-width:140px;padding:14px 12px}}
+
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.panel-title{color:#eef4ff;font-size:18px;font-weight:800}
+.panel-head-actions{display:flex;align-items:center;gap:8px}
+.help-btn{width:34px;height:34px;border-radius:999px;padding:0;display:flex;align-items:center;justify-content:center;background:#21355f;color:#eef4ff;border:1px solid #35518a;font-size:18px;line-height:1}
+.collapse-btn{background:#21355f;color:#eef4ff;border:1px solid #35518a;padding:9px 14px;font-size:14px;border-radius:12px}
+.manage-panel-body{display:grid;gap:14px}
+.manage-section{background:#182a52;border:1px solid #2c4477;border-radius:18px;padding:16px}
+.manage-section-title{color:#eef4ff;font-size:16px;font-weight:800;margin-bottom:12px}
+.study-home-layout{display:grid;gap:14px}
+.study-home-layout .top-grid{margin-top:0}
+.study-deck-picker{display:grid;gap:8px}
+.study-deck-picker-label{color:#a9b8d8;font-size:13px;font-weight:800}
+.study-deck-picker select{width:100%;color:#eef4ff;background:#182a52;border:1px solid #2c4477;border-radius:12px;padding:12px 14px;font-size:14px}
+.study-entry-panel{display:grid;gap:14px}
+.study-mode-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.study-mode-btn{background:#182a52;border:1px solid #35518a;border-radius:20px;padding:20px 18px;text-align:left;color:#eef4ff;display:grid;gap:8px}
+.study-mode-btn strong{font-size:18px}
+.study-mode-btn span{font-size:14px;line-height:1.7;color:#bdd0f5;font-weight:600}
+.word-list-panel{display:grid;gap:14px}
+.word-list-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.word-list-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.word-list-item{background:#182a52;border:1px solid #2c4477;border-radius:18px;padding:16px;text-align:left;color:#eef4ff;display:grid;gap:10px}
+.word-list-item.is-difficult{border-color:#c86565;box-shadow:0 0 0 1px rgba(200,101,101,.22) inset}
+.word-list-word{font-size:22px;font-weight:800;line-height:1.3;color:#f7fbff;word-break:break-word}
+.word-list-pos{font-size:13px;font-weight:800;color:#a9b8d8}
+.word-list-meaning{font-size:15px;line-height:1.7;color:#dfe9ff;word-break:break-word}
+.word-list-empty{background:#182a52;border:1px solid #2c4477;border-radius:18px;padding:22px;color:#c4d6ff;line-height:1.8}
+@media (max-width:900px){.study-mode-grid,.word-list-grid{grid-template-columns:1fr}}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(5,10,20,.72);display:flex;align-items:center;justify-content:center;padding:18px;z-index:2000}
+.modal-box{width:min(760px,100%);max-height:min(82vh,900px);overflow:auto;background:#12203f;border:1px solid #2c4477;border-radius:22px;box-shadow:0 20px 50px rgba(0,0,0,.35);padding:20px}
+.modal-title{color:#eef4ff;font-size:22px;font-weight:800;margin-bottom:14px}
+.modal-close-row{display:flex;justify-content:flex-end;margin-top:16px}
+.help-list{display:grid;gap:10px}
+.help-item{background:#182a52;border:1px solid #2c4477;border-radius:16px;padding:12px 14px;color:#eef4ff;line-height:1.7}
+.help-item strong{display:block;color:#f7fbff;font-size:15px;margin-bottom:4px}
+
+/* GitHub Pages dark visual refresh. Keep ids and behavior untouched. */
+:root{
+  --bg:#0b1117;
+  --page:#0b1117;
+  --card:#131c26;
+  --panel:#121b25;
+  --panel-soft:#172331;
+  --muted:#9aa8b5;
+  --text:#ecf3f7;
+  --border:#263747;
+  --primary:#3dd6c6;
+  --primary-strong:#28b9aa;
+  --primary-soft:#163f42;
+  --accent:#f4b35f;
+  --accent-soft:#3c2c17;
+  --danger:#e05e5e;
+  --shadow:0 18px 45px rgba(0,0,0,.35);
+  --shadow-soft:0 8px 22px rgba(0,0,0,.25);
+}
+html{background:var(--page);color-scheme:dark}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at top left, rgba(61,214,198,.18), transparent 28rem),
+    radial-gradient(circle at bottom right, rgba(244,179,95,.10), transparent 24rem),
+    linear-gradient(180deg,#081018 0%,#0b1117 48%,#0f151c 100%);
+  color:var(--text);
+}
+.wrap{max-width:1120px;padding:24px 18px 56px}
+.wrap::before{
+  content:"後中醫英文單字卡";
+  display:block;
+  color:#f4fbff;
+  font-size:clamp(28px,4.5vw,48px);
+  line-height:1.08;
+  font-weight:900;
+  margin:10px 0 8px;
+  letter-spacing:0;
+}
+.wrap::after{
+  content:"可同步、多題庫、手機友善的英文備考工具";
+  display:block;
+  color:#a8b7c3;
+  font-size:15px;
+  font-weight:700;
+  margin:-2px 0 18px;
+}
+.panel,
+.card-shell,
+.modal-box{
+  background:rgba(18,27,37,.94);
+  border:1px solid rgba(45,63,80,.95);
+  border-radius:8px;
+  box-shadow:var(--shadow);
+}
+.panel{padding:20px;margin-bottom:16px}
+.panel-head{border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:16px}
+.panel-title,.study-title,.modal-title,.manage-section-title{color:#f0f7fb}
+.study-subtitle,.status,.deck-meta,.footer-note{color:#a4b4c0}
+.btn-secondary,
+.collapse-btn,
+.help-btn{
+  background:#1b2a38;
+  color:#edf6fa;
+  border:1px solid #304558;
+  border-radius:8px;
+  box-shadow:var(--shadow-soft);
+}
+.btn-secondary:hover,
+.collapse-btn:hover,
+.help-btn:hover,
+.study-mode-btn:hover,
+.word-list-item:hover{
+  border-color:#8fbab2;
+  transform:translateY(-1px);
+}
+button{border-radius:8px;transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease}
+button:active{transform:translateY(0)}
+.start-btn{
+  background:linear-gradient(135deg,#2fd5c5,#60e6d7);
+  color:#051317;
+  border-radius:8px;
+  box-shadow:0 16px 30px rgba(15,118,110,.24);
+}
+.start-btn:disabled{background:#243442;color:#7f909b;box-shadow:none}
+.top-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.statbox,
+.manage-section,
+.study-mode-btn,
+.word-list-item,
+.word-list-empty,
+.field,
+.quick-block,
+.help-item{
+  background:rgba(23,35,49,.96);
+  border:1px solid var(--border);
+  border-radius:8px;
+}
+.statbox{padding:16px}
+.statbox .label,.field .label,.quick-label,.study-deck-picker-label,.word-list-pos{color:#99aabb}
+.statbox .value{color:#f5fbff;text-shadow:none}
+.progressbar{background:#243442;border-radius:999px}
+.progressbar>div{background:linear-gradient(90deg,#2fd5c5,#f4b35f)}
+.deck-grid input,
+.deck-grid select,
+.study-deck-picker select,
+input[type="file"]{
+  background:#0f1822;
+  color:#edf6fa;
+  border:1px solid #304558;
+  border-radius:8px;
+  min-height:44px;
+}
+.deck-grid input:focus,
+.deck-grid select:focus,
+.study-deck-picker select:focus{
+  outline:3px solid rgba(15,118,110,.16);
+  border-color:var(--primary);
+}
+.card-shell{padding:14px}
+.card-area{padding:0}
+.card{
+  min-height:680px;
+  background:
+    radial-gradient(circle at top, rgba(61,214,198,.08), transparent 24rem),
+    linear-gradient(180deg,#111b25 0%,#0f1720 100%);
+  border:1px solid var(--border);
+  border-radius:8px;
+  box-shadow:var(--shadow);
+}
+.card-progress-text{color:#9fb0bd}
+.word,.back-word{color:#f5fbff;text-shadow:none}
+.front-phonetic,.hint{color:#a6b7c5}
+.speak{color:var(--primary);text-shadow:none}
+.difficult-toggle{
+  background:var(--accent-soft);
+  color:#ffd493;
+  border:1px solid #755728;
+  border-radius:999px;
+  box-shadow:var(--shadow-soft);
+}
+.difficult-toggle.is-on{background:var(--danger);border-color:var(--danger);color:#fff}
+.seen-action-btn{
+  background:var(--primary);
+  color:#061416;
+  border-radius:8px;
+  box-shadow:0 12px 24px rgba(15,118,110,.22);
+}
+.nav-btn{
+  background:#14202b;
+  border:1px solid #304558;
+  color:#eef7fb;
+  box-shadow:var(--shadow-soft);
+}
+.quick-value,.field .value,.word-list-meaning{color:#e9f2f7}
+.back-header{background:#121b25;border-bottom:1px solid var(--border)}
+.word-list-word{color:#f4fbff}
+.word-list-item.is-difficult{border-color:#d99a6b;box-shadow:0 0 0 2px rgba(194,124,44,.12) inset}
+.modal-overlay{background:rgba(3,8,12,.72);backdrop-filter:blur(4px)}
+
+@media (max-width:700px){
+  .wrap{padding:18px 12px 38px}
+  .panel{padding:14px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .row .btn-secondary{padding:11px 10px;font-size:13px}
+  .top-grid{grid-template-columns:1fr}
+  .study-toolbar{align-items:stretch}
+  .study-toolbar .btn-secondary{width:100%}
+  .card{min-height:680px}
+  .front-bottom-actions,.quick-bottom-actions{width:100%;margin-bottom:34px}
+  .seen-action-btn{width:150px;min-width:150px;max-width:150px}
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="homeScreen">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">學習功能與進度</div>
+      </div>
+      <div class="study-home-layout">
+        <div class="study-deck-picker">
+          <div class="study-deck-picker-label">目前學習題庫</div>
+          <select id="learningDeckSelect">
+            <option value="">請選擇題庫</option>
+          </select>
+        </div>
+        <div class="row">
+          <button id="addDailyLimitBtn" class="btn-secondary">增加新字 +5</button>
+          <button id="resetBtn" class="btn-secondary">重設本機+雲端進度</button>
+          <button id="clearBtn" class="btn-secondary">清除本機快取</button>
+          <button id="exportProgressBtn" class="btn-secondary">匯出進度</button>
+          <button id="importProgressBtn" class="btn-secondary">匯入進度</button>
+          <input type="file" id="progressFile" accept=".json,application/json" class="hidden-input" />
+        </div>
+        <div class="top-grid">
+          <div class="statbox">
+            <div class="label">今日新增 / 每日上限</div>
+            <div class="value" id="dailyText">0 / 0</div>
+            <div class="progressbar"><div id="dailyFill"></div></div>
+          </div>
+          <div class="statbox">
+            <div class="label">累積單字 / 總單字</div>
+            <div class="value" id="totalLearnedText">0 / 0</div>
+          </div>
+        </div>
+        <div id="statusText" class="status">規則：以「題號」分組；同題每個單字累積 5 次才換下一題；新增單字採全手動，按「增加新字 +5」才會增加。每日新增額度最多 30，會在跨日後自動歸零；進行中新字池上限也是 30，單字累積達 5 次後會自動移出新字池。已開放的新舊單字會一起輪流出現，並依困難、較新、較舊調整出現頻率。點卡片第一次顯示快速中文與範例，第二次顯示完整背面。</div>
+        <div class="home-start-wrap">
+          <button id="enterStudyBtn" class="start-btn">開始學習</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">題庫管理與雲端同步</div>
+        <div class="panel-head-actions">
+          <button id="helpBtn" class="help-btn" type="button" aria-label="查看按鈕說明">?</button>
+          <button id="managerCollapseBtn" class="collapse-btn" type="button" aria-expanded="true">收合</button>
+        </div>
+      </div>
+      <div id="managerPanelBody" class="manage-panel-body">
+        <div class="manage-section">
+          <div class="manage-section-title">題庫管理</div>
+          <div class="deck-grid">
+            <select id="deckSelect" class="wide">
+              <option value="">請選擇題庫</option>
+            </select>
+            <input id="deckNameInput" type="text" placeholder="題庫名稱（例如：113 北醫）" class="wide" />
+            <input id="deckUrlInput" type="text" placeholder="題庫網址（CSV / Google Sheets）" class="wide" />
+            <button id="addDeckBtn" class="btn-secondary">新增題庫</button>
+            <button id="saveDeckBtn" class="btn-secondary">更新題庫</button>
+            <button id="deleteDeckBtn" class="btn-secondary">刪除題庫</button>
+            <button id="loadDeckBtn" class="btn-secondary">載入題庫</button>
+            <button id="syncDeckBtn" class="btn-secondary">重新同步</button>
+          </div>
+          <div id="deckMetaText" class="deck-meta">尚未建立題庫。可貼上 CSV / Google Sheets 網址並新增題庫。</div>
+        </div>
+
+        <div class="manage-section">
+          <div class="manage-section-title">雲端同步</div>
+          <div class="deck-grid">
+            <input id="cloudScriptUrlInput" type="text" placeholder="貼上 Google Apps Script Web App 網址" class="wide" />
+            <input id="cloudUserKeyInput" type="text" placeholder="同步帳號代號（例如：lee_vocab）" class="wide" />
+            <button id="saveCloudConfigBtn" class="btn-secondary">儲存同步設定</button>
+            <button id="pushCloudBtn" class="btn-secondary">上傳雲端進度</button>
+            <button id="pullCloudBtn" class="btn-secondary">下載雲端進度</button>
+          </div>
+          <div id="cloudMetaText" class="deck-meta">尚未設定雲端同步。設定後可在多台裝置共用同一份進度。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="studyScreen" class="screen-hidden">
+    <div class="panel study-toolbar">
+      <div>
+        <div class="study-title" id="studyDeckTitle">目前題庫：—</div>
+        <div class="study-subtitle" id="studySubtitle">返回首頁可切換題庫、同步題庫與調整學習進度</div>
+      </div>
+      <button id="backHomeBtn" class="btn-secondary">返回首頁</button>
+    </div>
+
+    <div id="studyModeView" class="panel study-entry-panel screen-hidden">
+      <div class="panel-title">請選擇學習模式</div>
+      <div class="study-mode-grid">
+        <button id="memorizeModeBtn" class="study-mode-btn" type="button">
+          <strong>背誦單字卡</strong>
+          <span>沿用目前的背誦流程，依新字池與已學單字的規則抽題複習。</span>
+        </button>
+        <button id="deckWordModeBtn" class="study-mode-btn" type="button">
+          <strong>題庫單字卡</strong>
+          <span>先列出全部單字、詞性、定義；點選任一單字後進入三層單字卡。</span>
+        </button>
+        <button id="difficultWordModeBtn" class="study-mode-btn" type="button">
+          <strong>困難單字卡</strong>
+          <span>只列出有標記困難的單字；點入後可逐張查看與調整困難標記。</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="wordListView" class="panel word-list-panel screen-hidden">
+      <div class="word-list-head">
+        <div class="panel-title" id="wordListTitle">題庫單字卡</div>
+        <button id="backToStudyModesBtn" class="btn-secondary" type="button">返回模式選擇</button>
+      </div>
+      <div id="wordListEmpty" class="word-list-empty hidden">目前沒有可顯示的單字。</div>
+      <div id="wordListContainer" class="word-list-grid"></div>
+    </div>
+
+    <div id="cardView" class="screen-hidden">
+    <div class="card-shell">
+      <div class="card-area">
+        <div class="card" id="card">
+          <div class="card-progress-text" id="cardProgressText">0/0</div>
+          <div class="card-face front-face-layout" id="frontFace">
+            <button class="difficult-toggle difficult-btn" data-face="front">困難</button>
+            <div class="front-top">
+              <div class="front-word">
+                <div class="word" id="wordText">請先載入題庫</div>
+                <button class="speak" id="speakWordBtn">🔊</button>
+              </div>
+              <div class="front-phonetic" id="frontPhoneticText"></div>
+            </div>
+            <div class="front-bottom-actions action-row front-action-row">
+              <button class="nav-btn inline-nav-btn" id="prevBtn">←</button>
+              <button class="seen front-seen-btn seen-action-btn">已讀</button>
+              <button class="nav-btn inline-nav-btn" id="nextBtn">→</button>
+            </div>
+            <div class="hint">點卡片一次看中文與範例，再點一次看完整背面</div>
+          </div>
+
+          <div class="card-face quick-face-layout hidden" id="quickFace">
+            <button class="difficult-toggle difficult-btn" data-face="quick">困難</button>
+            <div class="quick-top">
+              <div class="quick-inner">
+                <div class="quick-title">
+                  <div class="back-word" id="quickWordText">—</div>
+                  <button class="speak" id="speakQuickWordBtn">🔊</button>
+                </div>
+                <div class="quick-block">
+                  <div class="quick-label">中文意思</div>
+                  <div class="quick-value" id="quickMeaningText">—</div>
+                </div>
+                <div class="quick-block">
+                  <div class="quick-label">範例</div>
+                  <div class="example-row">
+                    <div class="quick-value" id="quickExampleText">—</div>
+                    <button class="speak" id="speakQuickExampleBtn">🔊</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="quick-bottom-actions action-row quick-action-row">
+              <button class="nav-btn inline-nav-btn" id="prevBtnQuick">←</button>
+              <button class="seen quick-seen-btn seen-action-btn">已讀</button>
+              <button class="nav-btn inline-nav-btn" id="nextBtnQuick">→</button>
+            </div>
+          </div>
+
+          <div class="card-face back-face hidden" id="backFace">
+            <button class="difficult-toggle difficult-btn" data-face="back">困難</button>
+            <div class="back-header">
+              <div class="back-title">
+                <div class="back-word" id="backWordText">—</div>
+                <button class="speak" id="speakWordBtnBack">🔊</button>
+              </div>
+            </div>
+            <div class="back-scroll">
+              <div class="back-inner">
+                <div class="field"><div class="label">詞性</div><div class="value" id="posText">—</div></div>
+                <div class="field"><div class="label">定義</div><div class="value" id="meaningText">—</div></div>
+                
+                <div class="field"><div class="label">用法</div><div class="value" id="usageText">—</div></div>
+                <div class="field"><div class="label">詞性變化</div><div class="value" id="wordFormText">—</div></div>
+                <div class="field"><div class="label">三態</div><div class="value" id="tenseText">—</div></div>
+                <div class="field"><div class="label">現在分詞</div><div class="value" id="vingText">—</div></div>
+                <div class="field"><div class="label">常見搭配</div><div class="value" id="collocationText">—</div></div>
+                <div class="field"><div class="label">相關字</div><div class="value" id="relatedText">—</div></div>
+                <div class="field"><div class="label">同義字</div><div class="value" id="synonymsText">—</div></div>
+                <div class="field"><div class="label">反義字</div><div class="value" id="antonymsText">—</div></div>
+                <div class="field"><div class="label">範例</div><div class="example-row"><div class="value" id="exampleText">—</div><button class="speak" id="speakExampleBtn">🔊</button></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-note" id="cardFooterNote">按右箭頭或「已讀」都會直接進到下一個單字的正面。點卡片本體時會從第 1 層進第 2 層，再進第 3 層；在第 3 層再點一次，會直接前進到下一個單字。</div>
+    </div>
+    </div>
+  </div>
+</div>
+
+
+<div id="helpModal" class="modal-overlay hidden">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">
+    <div class="modal-title" id="helpModalTitle">按鈕說明</div>
+    <div class="help-list">
+      <div class="help-item"><strong>新增題庫</strong>把目前輸入的題庫名稱與網址加入清單。</div>
+      <div class="help-item"><strong>更新題庫</strong>更新目前選取題庫的名稱或網址。</div>
+      <div class="help-item"><strong>刪除題庫</strong>刪除目前題庫，並一併清除這份題庫在本機的快取與進度。</div>
+      <div class="help-item"><strong>載入題庫</strong>載入目前選到的題庫。若本機已有快取，會先載入快取。</div>
+      <div class="help-item"><strong>重新同步</strong>重新從原本的 Google Sheets 或 CSV 網址抓最新題庫資料。</div>
+            <div class="help-item"><strong>增加新字 +5</strong>每次最多新增 5 個單字；會同時受「今日剩餘額度」與「新字池剩餘空位」限制。</div>
+      <div class="help-item"><strong>重設學習進度</strong>重設目前題庫的學習進度；若已設定雲端同步，會一併覆蓋雲端進度。</div>
+      <div class="help-item"><strong>清除本機快取</strong>清除目前題庫存在本機的題庫快取與進度，之後會重新從題庫網址同步。</div>
+      <div class="help-item"><strong>匯出進度</strong>把目前題庫的進度匯出成 JSON 備份檔。</div>
+      <div class="help-item"><strong>匯入進度</strong>把先前匯出的 JSON 備份匯回目前題庫。</div>
+      <div class="help-item"><strong>開始學習</strong>先進入學習模式選擇，再決定要用背誦單字卡、題庫單字卡或困難單字卡。</div>
+      <div class="help-item"><strong>返回首頁</strong>回到首頁管理題庫與學習設定。</div>
+    </div>
+    <div class="modal-close-row">
+      <button id="closeHelpBtn" class="btn-secondary" type="button">關閉</button>
+    </div>
+  </div>
+</div>
+<iframe id="cloudSyncFrame" name="cloudSyncFrame" class="hidden"></iframe>
+
+<script>
+const APP_DECKS_INDEX_KEY='flashcard_decks_index_v1';
+const APP_DECKS_META_KEY='flashcard_decks_meta_v1';
+const ACTIVE_DECK_ID_KEY='flashcard_active_deck_id_v1';
+const CLOUD_SYNC_CONFIG_KEY='flashcard_cloud_sync_config_v1';
+const BUILT_IN_DECKS=[
+  {id:'builtin_cmu_112', name:'中國醫 112 英文單字庫', url:'data/112_cmu_english_vocab.csv', normalizedUrl:'data/112_cmu_english_vocab.csv', cloudDeckKey:'data/112_cmu_english_vocab.csv', type:'csv', createdAt:'2026-05-06T00:00:00.000Z', updatedAt:'2026-05-06T00:00:00.000Z', lastSyncedAt:'', totalWords:581, totalGroups:0, builtIn:true},
+  {id:'builtin_cmu_113', name:'中國醫 113 英文單字庫', url:'data/113_cmu_english_vocab.csv', normalizedUrl:'data/113_cmu_english_vocab.csv', cloudDeckKey:'data/113_cmu_english_vocab.csv', type:'csv', createdAt:'2026-05-06T00:00:00.000Z', updatedAt:'2026-05-06T00:00:00.000Z', lastSyncedAt:'', totalWords:479, totalGroups:0, builtIn:true},
+  {id:'builtin_cmu_114', name:'中國醫 114 英文單字庫', url:'data/114_cmu_english_vocab.csv', normalizedUrl:'data/114_cmu_english_vocab.csv', cloudDeckKey:'data/114_cmu_english_vocab.csv', type:'csv', createdAt:'2026-05-06T00:00:00.000Z', updatedAt:'2026-05-06T00:00:00.000Z', lastSyncedAt:'', totalWords:381, totalGroups:0, builtIn:true}
+];
+const DEFAULT_DAILY_NEW_LIMIT=0;
+const MAX_DAILY_NEW_LIMIT=30;
+const DAILY_LIMIT_STEP=5;
+const REQUIRED_COUNT=5;
+
+const el=id=>document.getElementById(id);
+const addDailyLimitBtn=el('addDailyLimitBtn'), resetBtn=el('resetBtn'), clearBtn=el('clearBtn');
+const exportProgressBtn=el('exportProgressBtn'), importProgressBtn=el('importProgressBtn'), progressFile=el('progressFile');
+const deckSelect=el('deckSelect'), learningDeckSelect=el('learningDeckSelect'), deckNameInput=el('deckNameInput'), deckUrlInput=el('deckUrlInput'), addDeckBtn=el('addDeckBtn'), saveDeckBtn=el('saveDeckBtn'), deleteDeckBtn=el('deleteDeckBtn'), loadDeckBtn=el('loadDeckBtn'), syncDeckBtn=el('syncDeckBtn'), deckMetaText=el('deckMetaText');
+const cloudScriptUrlInput=el('cloudScriptUrlInput'), cloudUserKeyInput=el('cloudUserKeyInput'), saveCloudConfigBtn=el('saveCloudConfigBtn'), pushCloudBtn=el('pushCloudBtn'), pullCloudBtn=el('pullCloudBtn'), cloudMetaText=el('cloudMetaText'), cloudSyncFrame=el('cloudSyncFrame');
+const homeScreen=el('homeScreen'), studyScreen=el('studyScreen'), enterStudyBtn=el('enterStudyBtn'), backHomeBtn=el('backHomeBtn'), studyDeckTitle=el('studyDeckTitle'), studySubtitle=el('studySubtitle');
+const helpBtn=el('helpBtn'), helpModal=el('helpModal'), closeHelpBtn=el('closeHelpBtn');
+const managerCollapseBtn=el('managerCollapseBtn'), managerPanelBody=el('managerPanelBody');
+const seenBtns=()=>document.querySelectorAll('.seen-action-btn');
+const difficultBtns=()=>document.querySelectorAll('.difficult-btn');
+const statusText=el('statusText'), dailyText=el('dailyText'), dailyFill=el('dailyFill'), totalLearnedText=el('totalLearnedText');
+const card=el('card'), frontFace=el('frontFace'), quickFace=el('quickFace'), backFace=el('backFace');
+const prevBtns=()=>document.querySelectorAll('#prevBtn, #prevBtnQuick, #prevBtnBack');
+const nextBtns=()=>document.querySelectorAll('#nextBtn, #nextBtnQuick, #nextBtnBack');
+const wordText=el('wordText'), frontPhoneticText=el('frontPhoneticText');
+const quickWordText=el('quickWordText'), quickMeaningText=el('quickMeaningText'), quickExampleText=el('quickExampleText');
+const backWordText=el('backWordText');
+const speakWordBtn=el('speakWordBtn'), speakQuickWordBtn=el('speakQuickWordBtn'), speakQuickExampleBtn=el('speakQuickExampleBtn'), speakWordBtnBack=el('speakWordBtnBack'), speakExampleBtn=el('speakExampleBtn');
+const posText=el('posText'), meaningText=el('meaningText'), usageText=el('usageText'), wordFormText=el('wordFormText'), tenseText=el('tenseText'), vingText=el('vingText'), collocationText=el('collocationText'), relatedText=el('relatedText'), synonymsText=el('synonymsText'), antonymsText=el('antonymsText'), exampleText=el('exampleText');
+const cardProgressText=el('cardProgressText');
+const studyModeView=el('studyModeView'), wordListView=el('wordListView'), cardView=el('cardView');
+const memorizeModeBtn=el('memorizeModeBtn'), deckWordModeBtn=el('deckWordModeBtn'), difficultWordModeBtn=el('difficultWordModeBtn'), backToStudyModesBtn=el('backToStudyModesBtn');
+const wordListTitle=el('wordListTitle'), wordListContainer=el('wordListContainer'), wordListEmpty=el('wordListEmpty'), cardFooterNote=el('cardFooterNote');
+const backScroll=document.querySelector('.back-scroll');
+
+let cloudConfig=defaultCloudConfig();
+let cloudAutoSyncTimer=null;
+let cloudAutoSyncInFlight=false;
+let cloudAutoSyncQueued=false;
+let deckLoadRequestSeq=0;
+let cloudDeckIndexSyncTimer=null;
+let cloudDeckIndexSyncInFlight=false;
+let cloudDeckIndexSyncQueued=false;
+
+let words=[], groups=[], currentCard=null, history=[], historyIndex=-1, cardStage=1;
+let studySessionType='memorize';
+let activeBrowseItems=[];
+let activeBrowseIndex=-1;
+let decks=[];
+let deckRegistryMeta=defaultDeckRegistryMeta();
+let currentDeckId='';
+let currentDeckMeta=null;
+let state=defaultState();
+let syncMeta=defaultSyncMeta();
+
+function defaultState(){ return {dailyNewIds: [],dailyAddedIds: [],dailyLimit: DEFAULT_DAILY_NEW_LIMIT,currentGroupIndex: 0,counts: {},groupStarted: [],completedGroups: [],lastResetKey: '',difficultMap: {},updatedAt:''}; }
+function getDailyCap(){ return MAX_DAILY_NEW_LIMIT; }
+function getTodayAddedCount(){ return Array.isArray(state?.dailyAddedIds) ? state.dailyAddedIds.length : 0; }
+function getActiveNewPoolCount(){ return Array.isArray(state?.dailyNewIds) ? state.dailyNewIds.length : 0; }
+function getDailyRemainingQuota(){ return Math.max(0, getDailyCap() - getTodayAddedCount()); }
+function getNewPoolRemainingQuota(){ return Math.max(0, getDailyCap() - getActiveNewPoolCount()); }
+function getAddableNewWordCount(){ return Math.max(0, Math.min(getDailyRemainingQuota(), getNewPoolRemainingQuota())); }
+function defaultDeckRegistryMeta(){ return {updatedAt:''}; }
+function defaultCloudConfig(){ return {scriptUrl:'https://script.google.com/macros/s/AKfycbyhK5odtV6a13q3m0RHOA4gyMaW2Y9LS1RuOB26p34v7_bq2Jv0drGdbcuKWp10PwZe/exec', userKey:'aj_vocab', lastPushAt:'', lastPullAt:''}; }
+function defaultSyncMeta(){ return {dirty:false,autoPushBlocked:false,blockReason:''}; }
+function currentDeckDataKey(){ return currentDeckId ? `deck_data_${currentDeckId}` : ''; }
+function currentDeckSyncMetaKey(){ return currentDeckId ? `deck_sync_meta_${currentDeckId}` : ''; }
+
+function loadDeckRegistryMeta(){
+  try{
+    const raw=localStorage.getItem(APP_DECKS_META_KEY);
+    if(!raw) return defaultDeckRegistryMeta();
+    const parsed=JSON.parse(raw);
+    return {updatedAt:String(parsed?.updatedAt||'').trim()};
+  }catch(e){
+    return defaultDeckRegistryMeta();
+  }
+}
+function saveDeckRegistryMeta(){
+  localStorage.setItem(APP_DECKS_META_KEY, JSON.stringify(deckRegistryMeta||defaultDeckRegistryMeta()));
+}
+function getDeckRegistryUpdatedTime(source=deckRegistryMeta){
+  const candidates=[source?.updatedAt, source?.payload?.updatedAt];
+  for(const value of candidates){
+    const ts=Date.parse(String(value||''));
+    if(Number.isFinite(ts)) return ts;
+  }
+  return 0;
+}
+function sanitizeDeckMetaForCloud(deck){
+  const normalized=normalizeDeckMeta(deck);
+  if(!normalized) return null;
+  return {
+    id:String(normalized.id||'').trim(),
+    name:String(normalized.name||'').trim(),
+    url:String(normalized.url||'').trim(),
+    normalizedUrl:String(normalized.normalizedUrl||'').trim(),
+    type:String(normalized.type||'').trim(),
+    cloudDeckKey:String(normalized.cloudDeckKey||'').trim(),
+    createdAt:String(normalized.createdAt||'').trim(),
+    updatedAt:String(normalized.updatedAt||'').trim(),
+    lastSyncedAt:String(normalized.lastSyncedAt||'').trim(),
+    totalWords:Number(normalized.totalWords)||0,
+    totalGroups:Number(normalized.totalGroups)||0
+  };
+}
+function buildDeckIndexPayload(){
+  const updatedAt=String(deckRegistryMeta?.updatedAt||'').trim() || new Date().toISOString();
+  if(!deckRegistryMeta?.updatedAt) deckRegistryMeta={updatedAt};
+  return {
+    version:1,
+    updatedAt,
+    decks:(Array.isArray(decks)?decks:[]).map(sanitizeDeckMetaForCloud).filter(Boolean)
+  };
+}
+function persistDeckRegistryLocal({markUpdated=false, autoPush=true}={}){
+  decks=(Array.isArray(decks)?decks:[]).map(normalizeDeckMeta).filter(Boolean);
+  if(markUpdated) deckRegistryMeta.updatedAt=new Date().toISOString();
+  localStorage.setItem(APP_DECKS_INDEX_KEY, JSON.stringify(decks));
+  saveDeckRegistryMeta();
+  if(autoPush && hasCloudDeckIndexConfig()) scheduleCloudDeckIndexAutoPush();
+}
+function hasCloudDeckIndexConfig(){
+  const scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
+  const userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
+  return !!(scriptUrl && userKey);
+}
+function applyCloudDeckIndexToLocal(payload,{autoPush=false}={}){
+  const incomingDecks=Array.isArray(payload?.decks)?payload.decks:[];
+  decks=incomingDecks.map(normalizeDeckMeta).filter(Boolean);
+  deckRegistryMeta={updatedAt:String(payload?.updatedAt||'').trim()};
+  persistDeckRegistryLocal({markUpdated:false, autoPush});
+  ensureBuiltInDecks({markUpdated:true, autoPush:false});
+  renderDeckSelect();
+  const selectedDeck=getDeckById(currentDeckId);
+  if(selectedDeck){
+    currentDeckMeta=normalizeDeckMeta(selectedDeck);
+  }else if(currentDeckId){
+    currentDeckId='';
+    currentDeckMeta=null;
+    syncMeta=defaultSyncMeta();
+    saveActiveDeckId();
+    clearCardUI();
+  }
+  updateDeckMetaText();
+  updateCloudMetaText();
+}
+function scheduleCloudDeckIndexAutoPush(){
+  if(!hasCloudDeckIndexConfig()) return;
+  if(cloudDeckIndexSyncTimer) clearTimeout(cloudDeckIndexSyncTimer);
+  cloudDeckIndexSyncTimer=setTimeout(()=>{
+    cloudDeckIndexSyncTimer=null;
+    pushCloudDeckIndexSilent();
+  }, 900);
+}
+
+function loadCloudConfig(){
+  try{
+    const raw=localStorage.getItem(CLOUD_SYNC_CONFIG_KEY);
+    if(!raw) return defaultCloudConfig();
+    const parsed=JSON.parse(raw);
+    return {
+      scriptUrl:String(parsed?.scriptUrl||'').trim(),
+      userKey:String(parsed?.userKey||'').trim(),
+      lastPushAt:String(parsed?.lastPushAt||'').trim(),
+      lastPullAt:String(parsed?.lastPullAt||'').trim()
+    };
+  }catch(e){
+    return defaultCloudConfig();
+  }
+}
+function saveCloudConfig(){
+  localStorage.setItem(CLOUD_SYNC_CONFIG_KEY, JSON.stringify(cloudConfig));
+  updateCloudMetaText();
+}
+function loadSyncMeta(){
+  syncMeta=defaultSyncMeta();
+  if(!currentDeckId) return;
+  try{
+    const raw=localStorage.getItem(currentDeckSyncMetaKey());
+    if(!raw) return;
+    const parsed=JSON.parse(raw);
+    syncMeta={
+      dirty:!!parsed?.dirty,
+      autoPushBlocked:!!parsed?.autoPushBlocked,
+      blockReason:String(parsed?.blockReason||'').trim()
+    };
+  }catch(e){
+    syncMeta=defaultSyncMeta();
+  }
+}
+function saveSyncMeta(){
+  if(!currentDeckId) return;
+  localStorage.setItem(currentDeckSyncMetaKey(), JSON.stringify(syncMeta||defaultSyncMeta()));
+  updateCloudMetaText();
+}
+function getSyncBlockReasonText(reason=syncMeta?.blockReason||''){
+  switch(String(reason||'')){
+    case 'local_reset': return '本機已重設學習進度';
+    case 'local_clear': return '本機已清除快取與進度';
+    case 'local_import': return '本機剛匯入進度';
+    case 'kept_local_after_compare': return '已保留較新的本機進度';
+    case 'ambiguous_compare': return '本機與雲端無法判定新舊';
+    default: return '';
+  }
+}
+function canAutoPushNow(){
+  return hasCloudSyncConfig() && !!syncMeta?.dirty && !syncMeta?.autoPushBlocked;
+}
+function clearCloudPushBlock(){
+  syncMeta.autoPushBlocked=false;
+  syncMeta.blockReason='';
+}
+function releaseTransientCloudBlock(){
+  if(syncMeta.autoPushBlocked && ['kept_local_after_compare','ambiguous_compare'].includes(syncMeta.blockReason)){
+    clearCloudPushBlock();
+  }
+}
+function commitStateChange({blockCloud=false, blockReason='', autoPush=true}={}){
+  if(blockCloud){
+    syncMeta.dirty=true;
+    syncMeta.autoPushBlocked=true;
+    syncMeta.blockReason=blockReason || syncMeta.blockReason || 'manual_block';
+  }else{
+    releaseTransientCloudBlock();
+    syncMeta.dirty=true;
+  }
+  saveState({markUpdated:true, autoPush:autoPush && !syncMeta.autoPushBlocked});
+  saveSyncMeta();
+}
+function hasMeaningfulState(sourceState){
+  const counts=sourceState?.counts && typeof sourceState.counts==='object' ? sourceState.counts : {};
+  const difficultMap=sourceState?.difficultMap && typeof sourceState.difficultMap==='object' ? sourceState.difficultMap : {};
+  const hasCounts=Object.values(counts).some(v=>Number(v||0)>0);
+  return hasCounts || (Array.isArray(sourceState?.dailyAddedIds) && sourceState.dailyAddedIds.length>0) || (Array.isArray(sourceState?.dailyNewIds) && sourceState.dailyNewIds.length>0) || Number(sourceState?.currentGroupIndex||0)>0 || Object.keys(difficultMap).length>0;
+}
+function getProgressUpdatedTime(progressLike){
+  const candidates=[progressLike?.state?.updatedAt, progressLike?.updatedAt, progressLike?.exportedAt];
+  for(const value of candidates){
+    const ts=Date.parse(String(value||''));
+    if(Number.isFinite(ts)) return ts;
+  }
+  return 0;
+}
+function buildStateFromSource(sourceState){
+  return {
+    dailyNewIds:Array.isArray(sourceState?.dailyNewIds)?sourceState.dailyNewIds:[],
+    dailyAddedIds:Array.isArray(sourceState?.dailyAddedIds)?sourceState.dailyAddedIds:(Array.isArray(sourceState?.dailyNewIds)?sourceState.dailyNewIds:[]),
+    dailyLimit:getDailyLimitValue(sourceState?.dailyLimit),
+    currentGroupIndex:Number(sourceState?.currentGroupIndex)||0,
+    counts:sourceState?.counts&&typeof sourceState.counts==='object'?sourceState.counts:{},
+    groupStarted:Array.isArray(sourceState?.groupStarted)?sourceState.groupStarted:[],
+    completedGroups:Array.isArray(sourceState?.completedGroups)?sourceState.completedGroups:[],
+    lastResetKey:typeof sourceState?.lastResetKey==='string'?sourceState.lastResetKey:getLearningDateKey(),
+    difficultMap:sourceState?.difficultMap&&typeof sourceState.difficultMap==='object'?sourceState.difficultMap:{},
+    updatedAt:typeof sourceState?.updatedAt==='string'?sourceState.updatedAt:''
+  };
+}
+function updateCloudMetaText(){
+  if(cloudScriptUrlInput) cloudScriptUrlInput.value=cloudConfig.scriptUrl||'';
+  if(cloudUserKeyInput) cloudUserKeyInput.value=cloudConfig.userKey||'';
+  const urlText=cloudConfig.scriptUrl ? cloudConfig.scriptUrl : '尚未設定';
+  const userText=cloudConfig.userKey ? cloudConfig.userKey : '尚未設定';
+  const deckText=currentDeckMeta?.name || '尚未選題庫';
+  const lastPush=cloudConfig.lastPushAt ? new Date(cloudConfig.lastPushAt).toLocaleString('zh-TW') : '尚未上傳';
+  const lastPull=cloudConfig.lastPullAt ? new Date(cloudConfig.lastPullAt).toLocaleString('zh-TW') : '尚未下載';
+  const syncStatus=syncMeta?.autoPushBlocked ? `已暫停（${getSyncBlockReasonText() || '手動處理中'}）` : (syncMeta?.dirty ? '待上傳' : '正常');
+  if(cloudMetaText) cloudMetaText.textContent=`同步網址：${urlText}
+同步代號：${userText}
+目前題庫：${deckText}
+最近上傳：${lastPush}
+最近下載：${lastPull}
+自動上傳：${syncStatus}`;
+}
+function normalizeCloudScriptUrl(url){
+  return String(url||'').trim().replace(/\/+$/,'');
+}
+function buildStableCloudDeckKey(url){
+  return String(normalizeDeckUrl(url) || '').trim();
+}
+function normalizeDeckMeta(deck){
+  if(!deck || typeof deck !== 'object') return null;
+  const url=String(deck.url||'').trim();
+  const normalizedUrl=url ? normalizeDeckUrl(url) : '';
+  return {
+    ...deck,
+    name:String(deck.name||'').trim(),
+    url,
+    normalizedUrl,
+    type:url ? (isGoogleSheetUrl(url)?'google_sheet':'csv') : String(deck.type||''),
+    cloudDeckKey:String(deck.cloudDeckKey || normalizedUrl || url || '').trim(),
+    totalWords:Number(deck.totalWords)||0,
+    totalGroups:Number(deck.totalGroups)||0
+  };
+}
+function ensureBuiltInDecks({markUpdated=false, autoPush=false}={}){
+  if(!Array.isArray(decks)) decks=[];
+  const existingKeys=new Set(decks.map(deck=>String(deck?.cloudDeckKey || deck?.normalizedUrl || deck?.url || deck?.id || '').trim()).filter(Boolean));
+  let changed=false;
+  BUILT_IN_DECKS.forEach(deck=>{
+    const key=String(deck.cloudDeckKey || deck.url || deck.id).trim();
+    const id=String(deck.id||'').trim();
+    const hasDeck=decks.some(existing=>String(existing?.id||'')===id || String(existing?.cloudDeckKey||existing?.normalizedUrl||existing?.url||'').trim()===key);
+    if(!hasDeck && !existingKeys.has(key)){
+      decks.push(normalizeDeckMeta(deck));
+      existingKeys.add(key);
+      changed=true;
+    }
+  });
+  if(changed) persistDeckRegistryLocal({markUpdated, autoPush});
+  return changed;
+}
+function getCloudDeckKey(){
+  if(!currentDeckMeta) return '';
+  return String(currentDeckMeta.cloudDeckKey || '').trim();
+}
+function getCloudDeckName(){
+  return String(currentDeckMeta?.name || currentDeckId || '').trim();
+}
+function hasCloudSyncConfig(){
+  const scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
+  const userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
+  return !!(words.length && currentDeckId && scriptUrl && userKey);
+}
+function ensureCloudReady(){
+  if(!words.length || !currentDeckId){
+    alert('請先載入題庫。');
+    return false;
+  }
+  const scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
+  const userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
+  if(!scriptUrl){
+    alert('請先貼上 Google Apps Script Web App 網址。');
+    return false;
+  }
+  if(!userKey){
+    alert('請先輸入同步帳號代號。');
+    return false;
+  }
+  cloudConfig.scriptUrl=scriptUrl;
+  cloudConfig.userKey=userKey;
+  saveCloudConfig();
+  return true;
+}
+function submitCloudPostForm(action,payload){
+  return new Promise((resolve,reject)=>{
+    try{
+      const requestId=`cloud_${String(action||'post')}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+      const form=document.createElement('form');
+      form.method='POST';
+      form.action=cloudConfig.scriptUrl;
+      form.target='cloudSyncFrame';
+      form.style.display='none';
+      const entries={action:String(action||'').trim(), requestId, payload:JSON.stringify(payload)};
+      Object.entries(entries).forEach(([name,value])=>{
+        const input=document.createElement('input');
+        input.type='hidden';
+        input.name=name;
+        input.value=value;
+        form.appendChild(input);
+      });
+      const cleanup=()=>{
+        window.removeEventListener('message', onMessage);
+        clearTimeout(timer);
+        if(form.parentNode) form.parentNode.removeChild(form);
+      };
+      const onMessage=(event)=>{
+        const data=event?.data;
+        if(!data || data.source!=='flashcard-cloud-sync' || data.requestId!==requestId) return;
+        cleanup();
+        if(data.ok) resolve({ok:true, mode:'postMessage', data});
+        else reject(new Error(data.message || '雲端同步寫入失敗'));
+      };
+      const timer=setTimeout(()=>{
+        cleanup();
+        resolve({ok:true, mode:'submitted'});
+      }, 1800);
+      window.addEventListener('message', onMessage);
+      document.body.appendChild(form);
+      form.submit();
+    }catch(err){
+      reject(err);
+    }
+  });
+}
+async function verifyCloudSave(payload){
+  const verifyUrl=`${cloudConfig.scriptUrl}?action=load&userKey=${encodeURIComponent(payload.userKey)}&deckKey=${encodeURIComponent(payload.deckKey)}`;
+  const started=Date.now();
+  const localExportedAt=payload?.progress?.exportedAt || '';
+  let lastError='';
+  let attempts=0;
+  await new Promise(r=>setTimeout(r, 1600));
+  while(Date.now()-started < 24000){
+    attempts += 1;
+    try{
+      const result=await cloudJsonp(verifyUrl);
+      const remoteProgress=result?.payload?.progress;
+      const remoteExportedAt=remoteProgress?.exportedAt || '';
+      if(result && result.ok===true && remoteProgress){
+        if(!localExportedAt || remoteExportedAt===localExportedAt){
+          return result;
+        }
+        lastError='雲端資料尚未更新到最新版本';
+      }else{
+        lastError=result?.message || '雲端尚未讀到剛上傳的資料';
+      }
+    }catch(err){
+      lastError=err?.message || String(err);
+    }
+    const waitMs = attempts <= 2 ? 1400 : attempts <= 5 ? 2200 : 3200;
+    await new Promise(r=>setTimeout(r, waitMs));
+  }
+  throw new Error(lastError || '雲端同步寫入後驗證失敗');
+}
+async function postCloudSave(payload){
+  let lastError=null;
+  for(let attempt=1; attempt<=2; attempt++){
+    try{
+      await submitCloudPostForm('save', payload);
+      const verified = await verifyCloudSave(payload);
+      if(attempt > 1 && verified && typeof verified === 'object') verified.retried = true;
+      return verified;
+    }catch(err){
+      lastError=err;
+      const message=String(err?.message||err||'');
+      const shouldRetry = attempt===1 && /尚未更新|尚未讀到|找不到雲端進度|驗證失敗|格式不正確|同步逾時/.test(message);
+      if(!shouldRetry) throw err;
+      await new Promise(r=>setTimeout(r, 1200));
+    }
+  }
+  throw lastError || new Error('雲端同步寫入後驗證失敗');
+}
+function cloudJsonp(url){
+  return new Promise((resolve,reject)=>{
+    const callbackName=`__cloud_sync_cb_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+    const script=document.createElement('script');
+    const cleanup=()=>{
+      try{ delete window[callbackName]; }catch(_){ window[callbackName]=undefined; }
+      if(script.parentNode) script.parentNode.removeChild(script);
+    };
+    const timer=setTimeout(()=>{
+      cleanup();
+      reject(new Error('雲端同步逾時'));
+    }, 15000);
+    window[callbackName]=(data)=>{
+      clearTimeout(timer);
+      cleanup();
+      resolve(data);
+    };
+    script.onerror=()=>{
+      clearTimeout(timer);
+      cleanup();
+      reject(new Error('雲端同步載入失敗'));
+    };
+    const sep=url.includes('?') ? '&' : '?';
+    script.src=`${url}${sep}callback=${encodeURIComponent(callbackName)}`;
+    document.head.appendChild(script);
+  });
+}
+async function pushCloudProgress(){
+  if(!ensureCloudReady()) return;
+  const payload={
+    userKey:cloudConfig.userKey,
+    deckKey:getCloudDeckKey(),
+    deckName:getCloudDeckName(),
+    progress:buildProgressPayload()
+  };
+  statusText.textContent='正在上傳雲端進度...';
+  try{
+    const saveResult=await postCloudSave(payload);
+    cloudConfig.lastPushAt=new Date().toISOString();
+    syncMeta=defaultSyncMeta();
+    saveCloudConfig();
+    saveSyncMeta();
+    const retryNote = saveResult?.retried ? '（首次空白 sheet 已自動補寫完成）' : '';
+    statusText.textContent=saveResult?.warning ? `已送出雲端進度${retryNote}。${saveResult.warning}` : `已上傳雲端進度${retryNote}。現在可在其他裝置下載同一份進度。`;
+  }catch(err){
+    statusText.textContent=`雲端上傳失敗：${err?.message || err}`;
+    alert(`雲端上傳失敗：${err?.message || err}`);
+  }
+}
+
+
+async function fetchCloudDeckIndex(){
+  const scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
+  const userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
+  if(!scriptUrl || !userKey) return null;
+  const url=`${scriptUrl}?action=loadDeckIndex&userKey=${encodeURIComponent(userKey)}`;
+  const result=await cloudJsonp(url);
+  if(!result || result.ok!==true || !result.payload) return null;
+  return result.payload;
+}
+async function verifyCloudDeckIndexSave(payload){
+  const verifyUrl=`${cloudConfig.scriptUrl}?action=loadDeckIndex&userKey=${encodeURIComponent(payload.userKey)}`;
+  const started=Date.now();
+  const localUpdatedAt=String(payload?.index?.updatedAt||'').trim();
+  let lastError='';
+  let attempts=0;
+  await new Promise(r=>setTimeout(r, 1200));
+  while(Date.now()-started < 20000){
+    attempts += 1;
+    try{
+      const result=await cloudJsonp(verifyUrl);
+      const remoteUpdatedAt=String(result?.payload?.updatedAt||'').trim();
+      if(result && result.ok===true && result.payload){
+        if(!localUpdatedAt || remoteUpdatedAt===localUpdatedAt){
+          return result;
+        }
+        lastError='雲端題庫清單尚未更新到最新版本';
+      }else{
+        lastError=result?.message || '雲端尚未讀到剛上傳的題庫清單';
+      }
+    }catch(err){
+      lastError=err?.message || String(err);
+    }
+    const waitMs = attempts <= 2 ? 1200 : attempts <= 5 ? 1800 : 2600;
+    await new Promise(r=>setTimeout(r, waitMs));
+  }
+  throw new Error(lastError || '雲端題庫清單寫入後驗證失敗');
+}
+async function postCloudDeckIndexSave(payload){
+  let lastError=null;
+  for(let attempt=1; attempt<=2; attempt++){
+    try{
+      await submitCloudPostForm('saveDeckIndex', payload);
+      const verified = await verifyCloudDeckIndexSave(payload);
+      if(attempt > 1 && verified && typeof verified === 'object') verified.retried = true;
+      return verified;
+    }catch(err){
+      lastError=err;
+      const message=String(err?.message||err||'');
+      const shouldRetry = attempt===1 && /尚未更新|尚未讀到|驗證失敗|同步逾時/.test(message);
+      if(!shouldRetry) throw err;
+      await new Promise(r=>setTimeout(r, 1000));
+    }
+  }
+  throw lastError || new Error('雲端題庫清單寫入後驗證失敗');
+}
+async function pushCloudDeckIndex(){
+  if(!hasCloudDeckIndexConfig()){
+    alert('請先儲存雲端同步設定。');
+    return false;
+  }
+  cloudConfig.scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
+  cloudConfig.userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
+  saveCloudConfig();
+  try{
+    await postCloudDeckIndexSave({
+      userKey: cloudConfig.userKey,
+      index: buildDeckIndexPayload()
+    });
+    return true;
+  }catch(err){
+    console.error('題庫清單上傳失敗', err);
+    return false;
+  }
+}
+async function pushCloudDeckIndexSilent(){
+  if(!hasCloudDeckIndexConfig()) return false;
+  if(cloudDeckIndexSyncInFlight){
+    cloudDeckIndexSyncQueued=true;
+    return false;
+  }
+  cloudDeckIndexSyncInFlight=true;
+  try{
+    cloudConfig.scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
+    cloudConfig.userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
+    saveCloudConfig();
+    await postCloudDeckIndexSave({
+      userKey: cloudConfig.userKey,
+      index: buildDeckIndexPayload()
+    });
+    return true;
+  }catch(err){
+    console.error('自動同步題庫清單失敗', err);
+    return false;
+  }finally{
+    cloudDeckIndexSyncInFlight=false;
+    if(cloudDeckIndexSyncQueued){
+      cloudDeckIndexSyncQueued=false;
+      scheduleCloudDeckIndexAutoPush();
+    }
+  }
+}
+async function reconcileCloudDeckIndex({silent=true}={}){
+  if(!hasCloudDeckIndexConfig()) return false;
+  try{
+    const remoteIndex=await fetchCloudDeckIndex();
+    const remoteDecks=Array.isArray(remoteIndex?.decks)?remoteIndex.decks:[];
+    const remoteHas=remoteDecks.length>0;
+    const localHas=Array.isArray(decks) && decks.length>0;
+    const remoteTs=getDeckRegistryUpdatedTime(remoteIndex);
+    const localTs=getDeckRegistryUpdatedTime(deckRegistryMeta);
+
+    if(remoteHas && (!localHas || remoteTs > localTs)){
+      applyCloudDeckIndexToLocal(remoteIndex,{autoPush:false});
+      if(!silent) statusText.textContent='已同步雲端題庫清單。';
+      return true;
+    }
+    if(localHas && (!remoteHas || localTs > remoteTs)){
+      await pushCloudDeckIndexSilent();
+      if(!silent) statusText.textContent='已同步本機題庫清單到雲端。';
+      return false;
+    }
+    if(remoteHas && localHas && remoteTs === localTs){
+      applyCloudDeckIndexToLocal(remoteIndex,{autoPush:false});
+      return true;
+    }
+    return false;
+  }catch(err){
+    console.warn('同步題庫清單失敗', err);
+    if(!silent) statusText.textContent=`題庫清單同步失敗：${err?.message || err}`;
+    return false;
+  }
+}
+
+async function pushCloudProgressSilent(){
+  if(!canAutoPushNow()) return false;
+  if(cloudAutoSyncInFlight){
+    cloudAutoSyncQueued=true;
+    return false;
+  }
+  cloudConfig.scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
+  cloudConfig.userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
+  cloudAutoSyncInFlight=true;
+  try{
+    const payload={
+      userKey:cloudConfig.userKey,
+      deckKey:getCloudDeckKey(),
+      deckName:getCloudDeckName(),
+      progress:buildProgressPayload()
+    };
+    const saveResult=await postCloudSave(payload);
+    cloudConfig.lastPushAt=new Date().toISOString();
+    syncMeta=defaultSyncMeta();
+    saveCloudConfig();
+    saveSyncMeta();
+    if(saveResult?.warning) console.warn('自動雲端同步：', saveResult.warning);
+    if(saveResult?.retried) console.info('自動雲端同步：首次空白 sheet 已自動補寫完成');
+    return true;
+  }catch(err){
+    console.error('自動雲端同步失敗', err);
+    return false;
+  }finally{
+    cloudAutoSyncInFlight=false;
+    if(cloudAutoSyncQueued){
+      cloudAutoSyncQueued=false;
+      scheduleCloudAutoPush();
+    }
+  }
+}
+function scheduleCloudAutoPush(){
+  if(!canAutoPushNow()) return;
+  if(cloudAutoSyncTimer) clearTimeout(cloudAutoSyncTimer);
+  cloudAutoSyncTimer=setTimeout(()=>{
+    cloudAutoSyncTimer=null;
+    pushCloudProgressSilent();
+  }, 900);
+}
+async function fetchCloudProgressForCurrentDeck(){
+  const scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
+  const userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
+  if(!words.length || !currentDeckId || !scriptUrl || !userKey) return null;
+  const url=`${scriptUrl}?action=load&userKey=${encodeURIComponent(userKey)}&deckKey=${encodeURIComponent(getCloudDeckKey())}`;
+  const result=await cloudJsonp(url);
+  if(!result || result.ok!==true || !result.payload || !result.payload.progress) return null;
+  if(!signaturesMatch(result.payload.progress)) return null;
+  return result.payload.progress;
+}
+function applyCloudProgressToLocal(progress,{updateCloudPullAt=true,statusMessage='已下載雲端進度，並套用到目前題庫。'}={}){
+  if(!progress || !progress.state || typeof progress.state !== 'object') throw new Error('雲端進度格式不正確');
+  state = buildStateFromSource(progress.state);
+  normalizeState();
+  maybeDailyReset();
+  history=[];
+  historyIndex=-1;
+  syncMeta=defaultSyncMeta();
+  saveState({autoPush:false, markUpdated:false});
+  saveSyncMeta();
+  if(updateCloudPullAt){
+    cloudConfig.lastPullAt=new Date().toISOString();
+    saveCloudConfig();
+  }else{
+    updateCloudMetaText();
+  }
+  if(statusMessage) statusText.textContent=statusMessage;
+  showNextGeneratedCard();
+}
+async function reconcileCloudProgressOnLoad(){
+  if(!words.length || !currentDeckId || !hasCloudSyncConfig()) return;
+  if(syncMeta.autoPushBlocked && ['local_reset','local_clear','local_import'].includes(syncMeta.blockReason)){
+    updateCloudMetaText();
+    return;
+  }
+  try{
+    const remoteProgress=await fetchCloudProgressForCurrentDeck();
+    if(!remoteProgress) return;
+    const localMeaningful=hasMeaningfulState(state);
+    const remoteMeaningful=hasMeaningfulState(remoteProgress.state || {});
+    const localTs=getProgressUpdatedTime({state});
+    const remoteTs=getProgressUpdatedTime(remoteProgress);
+    if(!localMeaningful && remoteMeaningful){
+      applyCloudProgressToLocal(remoteProgress,{updateCloudPullAt:true,statusMessage:'已自動套用雲端進度。'});
+      return;
+    }
+    if(remoteTs && localTs){
+      if(remoteTs > localTs){
+        applyCloudProgressToLocal(remoteProgress,{updateCloudPullAt:true,statusMessage:'已自動套用較新的雲端進度。'});
+        return;
+      }
+      if(localTs > remoteTs){
+        syncMeta.dirty=true;
+        syncMeta.autoPushBlocked=true;
+        syncMeta.blockReason='kept_local_after_compare';
+        saveSyncMeta();
+        statusText.textContent='已保留較新的本機進度，並暫停自動上傳；若要覆蓋雲端，請手動按「上傳雲端進度」。';
+        return;
+      }
+      syncMeta=defaultSyncMeta();
+      saveSyncMeta();
+      return;
+    }
+    if(remoteMeaningful && localMeaningful){
+      const useCloud=confirm('本機與雲端都有進度，但無法確定哪個較新。\n按「確定」套用雲端；按「取消」保留本機。');
+      if(useCloud){
+        applyCloudProgressToLocal(remoteProgress,{updateCloudPullAt:true,statusMessage:'已套用雲端進度。'});
+        return;
+      }
+      syncMeta.dirty=true;
+      syncMeta.autoPushBlocked=true;
+      syncMeta.blockReason='ambiguous_compare';
+      saveSyncMeta();
+      statusText.textContent='已保留本機進度，並暫停自動上傳；若確認本機較新，請手動按「上傳雲端進度」。';
+      return;
+    }
+    if(remoteMeaningful && !localMeaningful){
+      applyCloudProgressToLocal(remoteProgress,{updateCloudPullAt:true,statusMessage:'已自動套用雲端進度。'});
+    }
+  }catch(err){
+    console.warn('載入題庫時檢查雲端進度失敗', err);
+  }
+}
+async function pullCloudProgress(){
+  if(!ensureCloudReady()) return;
+  statusText.textContent='正在下載雲端進度...';
+  try{
+    const progress=await fetchCloudProgressForCurrentDeck();
+    if(!progress){
+      throw new Error('找不到雲端進度');
+    }
+    applyCloudProgressToLocal(progress,{updateCloudPullAt:true,statusMessage:'已下載雲端進度，並套用到目前題庫。'});
+  }catch(err){
+    statusText.textContent=`雲端下載失敗：${err?.message || err}`;
+    alert(`雲端下載失敗：${err?.message || err}`);
+  }
+}
+function currentDeckStateKey(){ return currentDeckId ? `deck_state_${currentDeckId}` : ''; }
+function getGoogleSheetInfo(url){
+  const raw=String(url||'').trim();
+  if(!raw) return null;
+  try{
+    const u=new URL(raw);
+    if(!u.hostname.includes('docs.google.com') || !u.pathname.includes('/spreadsheets/d/')) return null;
+    const m=u.pathname.match(/\/spreadsheets\/d\/([^/]+)/);
+    const sheetId=m?.[1];
+    if(!sheetId) return null;
+    const hashGid=(u.hash.match(/gid=(\d+)/)||[])[1]||'';
+    const queryGid=u.searchParams.get('gid')||'';
+    const gid=queryGid || hashGid || '0';
+    const hasExplicitGid=!!(queryGid || hashGid);
+    return {sheetId,gid,raw,hasExplicitGid};
+  }catch(e){
+    return null;
+  }
+}
+function buildGoogleSheetCsvCandidates(url){
+  const info=getGoogleSheetInfo(url);
+  if(!info) return [String(url||'').trim()].filter(Boolean);
+  const {sheetId,gid}=info;
+  return [
+    `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`,
+    `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`,
+    `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`,
+    `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`
+  ];
+}
+function buildGoogleSheetReadableUrl(url){
+  const info=getGoogleSheetInfo(url);
+  if(!info) return String(url||'').trim();
+  const {sheetId,gid}=info;
+  return `https://docs.google.com/spreadsheets/d/${sheetId}/edit#gid=${gid}`;
+}
+function normalizeDeckUrl(url){
+  return buildGoogleSheetReadableUrl(url) || String(url||'').trim();
+}
+function parseGoogleVisualizationTable(table){
+  const cols=(table?.cols||[]).map(col=>String(col?.label||'').replace(/^﻿/,'').trim());
+  if(!cols.length) return [];
+  return (table?.rows||[]).map((row,index)=>{
+    const obj={id:index+1};
+    cols.forEach((header,i)=>{
+      const cell=row?.c?.[i];
+      let value='';
+      if(cell){
+        if(typeof cell.f==='string' && cell.f!=='') value=cell.f;
+        else if(cell.v!==null && cell.v!==undefined) value=String(cell.v);
+      }
+      obj[header]=String(value||'').trim();
+    });
+    return obj;
+  }).filter(item=>Object.values(item).some(v=>String(v||'').trim()!==''));
+}
+function fetchGoogleSheetViaJsonp(url){
+  const info=getGoogleSheetInfo(url);
+  if(!info) return Promise.reject(new Error('不是有效的 Google Sheets 網址'));
+  const {sheetId,gid}=info;
+  return new Promise((resolve,reject)=>{
+    const callbackName=`__gsheet_cb_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+    const script=document.createElement('script');
+    const timeout=window.setTimeout(()=>{
+      cleanup();
+      reject(new Error('Google Sheets 回應逾時'));
+    }, 15000);
+    function cleanup(){
+      window.clearTimeout(timeout);
+      try{ delete window[callbackName]; }catch(_){ window[callbackName]=undefined; }
+      if(script.parentNode) script.parentNode.removeChild(script);
+    }
+    window[callbackName]=(response)=>{
+      cleanup();
+      try{
+        const parsed=parseGoogleVisualizationTable(response?.table);
+        if(!parsed.length) throw new Error('沒有讀到有效資料');
+        if(!validateColumns(parsed)) throw new Error('題庫欄位不足，至少需要：word_id、單字、定義');
+        resolve({parsed, normalized:buildGoogleSheetReadableUrl(url)});
+      }catch(err){
+        reject(err instanceof Error ? err : new Error(String(err)));
+      }
+    };
+    script.onerror=()=>{
+      cleanup();
+      reject(new Error('Google Sheets JSONP 載入失敗'));
+    };
+    script.src=`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?gid=${encodeURIComponent(gid)}&tqx=${encodeURIComponent(`out:json;responseHandler:${callbackName}`)}`;
+    document.head.appendChild(script);
+  });
+}
+function isGoogleSheetUrl(url){ return !!getGoogleSheetInfo(url); }
+function deckTypeLabel(deck){ return deck?.type==='google_sheet' ? 'Google Sheets' : 'CSV'; }
+function newDeckId(){ return `deck_${Date.now()}_${Math.random().toString(36).slice(2,8)}`; }
+function parseCSV(text){
+  const rows=[]; let row=[], current='', inQuotes=false;
+  for(let i=0;i<text.length;i++){
+    const char=text[i], next=text[i+1];
+    if(char==='"'){ if(inQuotes && next==='"'){ current+='"'; i++; } else inQuotes=!inQuotes; }
+    else if(char===',' && !inQuotes){ row.push(current); current=''; }
+    else if((char==='\n'||char==='\r') && !inQuotes){ if(char==='\r' && next==='\n') i++; row.push(current); if(row.some(c=>c!=='')) rows.push(row); row=[]; current=''; }
+    else current+=char;
+  }
+  if(current.length>0 || row.length>0){ row.push(current); if(row.some(c=>c!=='')) rows.push(row); }
+  if(!rows.length) return [];
+  const headers=rows[0].map(h=>String(h||'').replace(/^\uFEFF/,'').trim());
+  return rows.slice(1).map((r,index)=>{ const obj={id:index+1}; headers.forEach((h,i)=>obj[h]=(r[i]||'').trim()); return obj; }).filter(item=>item['單字']);
+}
+function detectQuestionKey(item){ return item['word_id'] || item['單字'] || item.id; }
+function buildGroups(){ const map=new Map(); for(const item of words){ const key=detectQuestionKey(item); if(!map.has(key)) map.set(key,[]); map.get(key).push(item);} groups=Array.from(map.entries()).map(([key,items])=>({key,items})); }
+
+function getSourceRangeMax(value) {
+  let text = String(value || '').trim();
+  if (!text) return 0;
+
+  text = text.replace(/(?:1\d{2}|20\d{2})\s*(?:年|學測|統測|指考|分科|歷屆|考題)?/g, ' ');
+
+  const normalized = text
+    .replace(/[~～–—至到]/g, '-')
+    .replace(/第\s*(\d+)\s*題/g, '$1')
+    .replace(/[^\d\-]/g, ' ');
+
+  const nums = normalized.match(/\d+/g);
+  if (!nums || !nums.length) return 0;
+
+  return Math.max(...nums.map(n => Number(n) || 0));
+}
+function findSourceRangeKey(item) {
+  if (!item || typeof item !== 'object') return '';
+  const keys = Object.keys(item || {});
+  const directAliases = ['source_range', 'source range', 'sourceRange', '題目範圍', '來源題號', '來源範圍', '題號', 'question'];
+
+  for (const key of keys) {
+    if (directAliases.includes(key)) return key;
+  }
+  for (const key of keys) {
+    const normalized = normalizeHeaderKey(key);
+    if (normalized === 'sourcerange' || normalized.includes('sourcerange')) return key;
+    if ((normalized.includes('source') && normalized.includes('range')) ||
+        (normalized.includes('來源') && (normalized.includes('範圍') || normalized.includes('題號'))) ||
+        normalized.includes('題號')) {
+      return key;
+    }
+  }
+  return '';
+}
+function getSourceRangeValue(item) {
+  let rangeValue = getFieldByAliases(item, ['source_range', 'source range', 'sourceRange', '題目範圍', '來源題號', '來源範圍', '題號', 'question']);
+  if (String(rangeValue || '').trim()) return String(rangeValue).trim();
+  const fallbackKey = findSourceRangeKey(item);
+  return fallbackKey ? String(item[fallbackKey] || '').trim() : '';
+}
+function getEstimatedTotalQuestions(items = words) {
+  if (!Array.isArray(items) || !items.length) return 0;
+  const maxes = items.map(item => getSourceRangeMax(getSourceRangeValue(item)));
+  return Math.max(0, ...maxes);
+}
+function normalizeHeaderKey(value){
+  return String(value||'')
+    .replace(/^﻿/, '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_\-（）()：:]+/g,'');
+}
+function getFieldByAliases(item, aliases){
+  if(!item) return '';
+  for(const alias of aliases){
+    if(Object.prototype.hasOwnProperty.call(item, alias) && String(item[alias]||'').trim() !== '') return String(item[alias]).trim();
+  }
+  const keys = Object.keys(item||{});
+  const normalizedAliasSet = new Set((aliases||[]).map(normalizeHeaderKey));
+  for(const key of keys){
+    if(normalizedAliasSet.has(normalizeHeaderKey(key)) && String(item[key]||'').trim() !== '') return String(item[key]).trim();
+  }
+  return '';
+}
+function getCardKey(item){ if(!item) return ''; const noValue = getFieldByAliases(item, ['NO.','NO','No.','no.','編號']) || String(item.id||''); const wordValue = getFieldByAliases(item, ['單字','word','Word']) || String(item.id||''); return `${noValue}||${wordValue}`; }
+function isDifficultItem(item){ const key = getCardKey(item); return !!(state.difficultMap && state.difficultMap[key]); }
+function updateDifficultButtonUI(){ difficultBtns().forEach(btn => btn.classList.remove('is-on')); if(currentCard && isDifficultItem(currentCard)) difficultBtns().forEach(btn => btn.classList.add('is-on')); }
+function toggleDifficultCurrentCard(){ if(!currentCard) return; const key = getCardKey(currentCard); if(!state.difficultMap || typeof state.difficultMap !== 'object') state.difficultMap = {}; if(state.difficultMap[key]) delete state.difficultMap[key]; else state.difficultMap[key] = true; commitStateChange(); updateDifficultButtonUI(); if(isBrowseMode()) refreshBrowseUIAfterStateChange(); }
+function validateColumns(items){ if(!items.length) return false; const s=items[0]; return ['word_id','單字','定義'].every(k=>k in s); }
+function cleanForSpeech(text){ return String(text||'').replace(/（[^）]*）/g,'').replace(/\([^)]*\)/g,'').trim(); }
+function speak(text){ if(!('speechSynthesis' in window)) return; const t=cleanForSpeech(text); if(!t) return; window.speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='en-US'; u.rate=.95; window.speechSynthesis.speak(u); }
+function getLearningDateKey(now=new Date()){ const d=new Date(now); const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d); const year=parts.find(p=>p.type==='year')?.value || String(d.getFullYear()); const month=parts.find(p=>p.type==='month')?.value || String(d.getMonth()+1).padStart(2,'0'); const day=parts.find(p=>p.type==='day')?.value || String(d.getDate()).padStart(2,'0'); return `${year}-${month}-${day}`; }
+function setManagerPanelCollapsed(collapsed){ if(!managerPanelBody || !managerCollapseBtn) return; managerPanelBody.classList.toggle('hidden', !!collapsed); managerCollapseBtn.textContent = collapsed ? '展開' : '收合'; managerCollapseBtn.setAttribute('aria-expanded', String(!collapsed)); }
+function getDailyLimitValue(value=state.dailyLimit){ const num=Number(value); return Number.isFinite(num) ? Math.max(0, Math.min(MAX_DAILY_NEW_LIMIT, num)) : DEFAULT_DAILY_NEW_LIMIT; }
+function roundUpToDailyStep(value){ const num=Number(value); if(!Number.isFinite(num) || num<=0) return 0; return Math.min(MAX_DAILY_NEW_LIMIT, Math.max(0, Math.floor(num))); }
+function saveDecks({markUpdated=true, autoPush=true}={}){ persistDeckRegistryLocal({markUpdated, autoPush}); }
+function loadDecks(){ try{ const raw=localStorage.getItem(APP_DECKS_INDEX_KEY); decks = raw ? JSON.parse(raw) : []; if(!Array.isArray(decks)) decks=[]; decks=decks.map(normalizeDeckMeta).filter(Boolean); deckRegistryMeta=loadDeckRegistryMeta(); if(!deckRegistryMeta?.updatedAt && decks.length){ deckRegistryMeta.updatedAt=new Date().toISOString(); } persistDeckRegistryLocal({markUpdated:false, autoPush:false}); ensureBuiltInDecks({markUpdated:!raw, autoPush:false}); }catch(e){ decks=[]; deckRegistryMeta=loadDeckRegistryMeta(); ensureBuiltInDecks({markUpdated:true, autoPush:false}); } }
+function updateStudyDeckTitle(){ studyDeckTitle.textContent=`目前題庫：${currentDeckMeta?.name || '—'}`; }
+function isBrowseMode(){ return studySessionType==='browse_all' || studySessionType==='browse_difficult'; }
+function getBrowseModeLabel(mode=studySessionType){ return mode==='browse_difficult' ? '困難單字卡' : '題庫單字卡'; }
+function getBrowseItemsForMode(mode=studySessionType){ return mode==='browse_difficult' ? words.filter(item=>isDifficultItem(item)) : [...words]; }
+function updateStudySubtitleText(view='mode'){
+  if(!studySubtitle) return;
+  if(view==='mode') studySubtitle.textContent='請先選擇這次要使用的學習模式';
+  else if(view==='list') studySubtitle.textContent=`目前模式：${getBrowseModeLabel()}。點選任一單字後，可進入三層單字卡。`;
+  else if(view==='card' && isBrowseMode()) studySubtitle.textContent=`目前模式：${getBrowseModeLabel()}。在第 3 層再點一次，會回到單字總覽。`;
+  else studySubtitle.textContent='返回首頁可切換題庫、同步題庫與調整學習進度';
+}
+function updateCardFooterNote(){
+  if(!cardFooterNote) return;
+  cardFooterNote.textContent=isBrowseMode()
+    ? '左右箭頭可切換目前清單中的上一個或下一個單字。點卡片本體會從第 1 層進第 2 層，再進第 3 層；在第 3 層再點一次，會回到單字總覽。'
+    : '按右箭頭或「已讀」都會直接進到下一個單字的正面。點卡片本體時會從第 1 層進第 2 層，再進第 3 層；在第 3 層再點一次，會直接前進到下一個單字。';
+}
+function showStudyModeSelection(){
+  studyModeView.classList.remove('screen-hidden');
+  wordListView.classList.add('screen-hidden');
+  cardView.classList.add('screen-hidden');
+  updateStudySubtitleText('mode');
+}
+function renderWordList(){
+  if(!wordListContainer || !wordListEmpty || !wordListTitle) return;
+  activeBrowseItems=getBrowseItemsForMode(studySessionType);
+  wordListTitle.textContent=`${getBrowseModeLabel()}（${activeBrowseItems.length}）`;
+  if(!activeBrowseItems.length){
+    wordListContainer.innerHTML='';
+    wordListEmpty.classList.remove('hidden');
+    wordListEmpty.textContent=studySessionType==='browse_difficult' ? '目前還沒有標記為困難的單字。' : '目前題庫沒有可顯示的單字。';
+    return;
+  }
+  wordListEmpty.classList.add('hidden');
+  const currentKey=getCardKey(currentCard);
+  wordListContainer.innerHTML=activeBrowseItems.map((item,index)=>{
+    const isActive=currentKey && getCardKey(item)===currentKey;
+    const difficultClass=isDifficultItem(item) ? ' is-difficult' : '';
+    return `<button class="word-list-item${difficultClass}${isActive ? ' is-active' : ''}" type="button" data-word-index="${index}">
+      <div class="word-list-word">${escapeHtml(getFieldByAliases(item,['單字','word','Word']) || '—')}</div>
+      <div class="word-list-pos">${escapeHtml(getFieldByAliases(item,['詞性','part of speech']) || '—')}</div>
+      <div class="word-list-meaning">${escapeHtml(getFieldByAliases(item,['定義','meaning','definition']) || '—')}</div>
+    </button>`;
+  }).join('');
+}
+function showWordListView(mode=studySessionType){
+  studySessionType=mode;
+  studyModeView.classList.add('screen-hidden');
+  wordListView.classList.remove('screen-hidden');
+  cardView.classList.add('screen-hidden');
+  renderWordList();
+  updateStudySubtitleText('list');
+}
+function showCardView(){
+  studyModeView.classList.add('screen-hidden');
+  wordListView.classList.add('screen-hidden');
+  cardView.classList.remove('screen-hidden');
+  updateCardFooterNote();
+  updateStudySubtitleText('card');
+}
+function syncBrowseIndexWithCurrentCard(){
+  activeBrowseItems=getBrowseItemsForMode(studySessionType);
+  if(!currentCard){ activeBrowseIndex=-1; return; }
+  activeBrowseIndex=activeBrowseItems.findIndex(item=>getCardKey(item)===getCardKey(currentCard));
+}
+function openBrowseCardAt(index){
+  activeBrowseItems=getBrowseItemsForMode(studySessionType);
+  if(index<0 || index>=activeBrowseItems.length) return;
+  activeBrowseIndex=index;
+  showSpecificCard(activeBrowseItems[index]);
+  showCardView();
+}
+function openBrowseMode(mode){
+  studySessionType=mode;
+  activeBrowseItems=getBrowseItemsForMode(mode);
+  activeBrowseIndex=-1;
+  showWordListView(mode);
+}
+function startMemorizeMode(){
+  studySessionType='memorize';
+  updateCardFooterNote();
+  if(!currentCard) showNextGeneratedCard();
+  showCardView();
+}
+function refreshBrowseUIAfterStateChange(){
+  if(!isBrowseMode()) return;
+  const currentKey=getCardKey(currentCard);
+  activeBrowseItems=getBrowseItemsForMode(studySessionType);
+  activeBrowseIndex=activeBrowseItems.findIndex(item=>getCardKey(item)===currentKey);
+  renderWordList();
+  if(!cardView.classList.contains('screen-hidden')){
+    if(activeBrowseIndex===-1){
+      showWordListView(studySessionType);
+      return;
+    }
+    showSpecificCard(activeBrowseItems[activeBrowseIndex]);
+    showCardView();
+  }
+}
+function showHomeScreen(){ homeScreen.classList.remove('screen-hidden'); studyScreen.classList.add('screen-hidden'); updateStudyDeckTitle(); if(hasCloudDeckIndexConfig()) reconcileCloudDeckIndex({silent:true}); }
+function enterStudyScreen(){ if(!words.length){ alert('請先成功載入題庫。'); return; } studyScreen.classList.remove('screen-hidden'); homeScreen.classList.add('screen-hidden'); updateStudyDeckTitle(); showStudyModeSelection(); }
+
+function saveActiveDeckId(){ if(currentDeckId) localStorage.setItem(ACTIVE_DECK_ID_KEY, currentDeckId); else localStorage.removeItem(ACTIVE_DECK_ID_KEY); }
+function loadActiveDeckId(){ return localStorage.getItem(ACTIVE_DECK_ID_KEY) || ''; }
+function saveState({autoPush=true, markUpdated=false}={}){ if(!currentDeckId) return; if(markUpdated) state.updatedAt=new Date().toISOString(); localStorage.setItem(currentDeckStateKey(), JSON.stringify(state)); updateDeckMetaText(); updateCloudMetaText(); if(autoPush && canAutoPushNow()) scheduleCloudAutoPush(); }
+function loadState(){ state=defaultState(); if(!currentDeckId) return; try{ const raw=localStorage.getItem(currentDeckStateKey()); if(!raw) return; const parsed=JSON.parse(raw); if(parsed&&typeof parsed==='object'){ state={dailyNewIds:Array.isArray(parsed.dailyNewIds)?parsed.dailyNewIds:[],dailyAddedIds:Array.isArray(parsed.dailyAddedIds)?parsed.dailyAddedIds:(Array.isArray(parsed.dailyNewIds)?parsed.dailyNewIds:[]),dailyLimit:getDailyLimitValue(parsed.dailyLimit),currentGroupIndex:Number(parsed.currentGroupIndex)||0,counts:parsed.counts&&typeof parsed.counts==='object'?parsed.counts:{},groupStarted:Array.isArray(parsed.groupStarted)?parsed.groupStarted:[],completedGroups:Array.isArray(parsed.completedGroups)?parsed.completedGroups:[],lastResetKey:typeof parsed.lastResetKey==='string'?parsed.lastResetKey:'',difficultMap:parsed.difficultMap&&typeof parsed.difficultMap==='object'?parsed.difficultMap:{},updatedAt:typeof parsed.updatedAt==='string'?parsed.updatedAt:''}; } }catch(e){}
+}
+function maybeDailyReset(){
+  const todayKey=getLearningDateKey();
+  const lastKey=String(state.lastResetKey||'').trim();
+  if(!lastKey){
+    state.lastResetKey=todayKey;
+    return false;
+  }
+  if(lastKey===todayKey) return false;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(lastKey) && lastKey > todayKey){
+    state.lastResetKey=lastKey;
+    return false;
+  }
+  state.lastResetKey=todayKey;
+  state.dailyAddedIds=[];
+  state.dailyLimit=0;
+  syncMeta.dirty=true;
+  saveSyncMeta();
+  saveState({autoPush:!syncMeta.autoPushBlocked, markUpdated:true});
+  return true;
+}
+function resetState({blockCloud=false, blockReason='local_reset'}={}){ state=defaultState(); state.lastResetKey=getLearningDateKey(); history=[]; historyIndex=-1; commitStateChange({blockCloud, blockReason, autoPush:false}); updateDifficultButtonUI(); }
+function saveWordsToStorage(){ if(!currentDeckId) return; localStorage.setItem(currentDeckDataKey(), JSON.stringify(words)); if(currentDeckMeta){ currentDeckMeta.totalWords=words.length; currentDeckMeta.totalGroups=getEstimatedTotalQuestions(words); currentDeckMeta.cachedAt=new Date().toISOString(); upsertCurrentDeckMeta(); } }
+function loadWordsFromStorage(){ try{ const raw=currentDeckId ? localStorage.getItem(currentDeckDataKey()) : ''; if(!raw) return []; const parsed=JSON.parse(raw); return Array.isArray(parsed)?parsed:[]; }catch(e){ return []; } }
+function clearStoredCsv(){ if(currentDeckId) localStorage.removeItem(currentDeckDataKey()); }
+function normalizeState(){
+  const validWordIds = new Set(words.map(w=>w.id));
+  for(const w of words){ if(!(w.id in state.counts)) state.counts[w.id]=0; }
+  if(!Array.isArray(state.dailyNewIds)) state.dailyNewIds = [];
+  state.dailyNewIds = state.dailyNewIds.filter(id=>validWordIds.has(id));
+  if(!Array.isArray(state.dailyAddedIds)) state.dailyAddedIds = Array.isArray(state.dailyNewIds) ? [...state.dailyNewIds] : [];
+  state.dailyAddedIds = state.dailyAddedIds.filter(id=>validWordIds.has(id));
+  if(!Array.isArray(state.groupStarted)) state.groupStarted=[];
+  state.groupStarted = state.groupStarted.filter(key=>groups.some(g=>g.key===key));
+  if(!Array.isArray(state.completedGroups)) state.completedGroups=[];
+  state.completedGroups = state.completedGroups.filter(key=>groups.some(g=>g.key===key));
+  if(state.currentGroupIndex>=groups.length) state.currentGroupIndex=Math.max(0,groups.length-1);
+  if(!state.lastResetKey) state.lastResetKey=getLearningDateKey();
+  if(!state.difficultMap || typeof state.difficultMap !== 'object') state.difficultMap = {};
+  state.dailyLimit = getDailyLimitValue(state.dailyLimit);
+  saveState({autoPush:false});
+}
+function getCsvSignature(){ return {totalWords:words.length,totalGroups:groups.length,estimatedQuestions:getEstimatedTotalQuestions(words),firstWord:words[0]?.['單字']||'',lastWord:words[words.length-1]?.['單字']||'',questionKeys:groups.map(g=>String(g.key))}; }
+function buildProgressPayload(){ return {version:2,deckId:currentDeckId,deckName:currentDeckMeta?.name||'',exportedAt:new Date().toISOString(),signature:getCsvSignature(),state}; }
+function signaturesMatch(payload){ if(!payload||!payload.signature) return false; const current=getCsvSignature(), incoming=payload.signature; if(current.totalWords!==incoming.totalWords||current.totalGroups!==incoming.totalGroups||current.firstWord!==incoming.firstWord||current.lastWord!==incoming.lastWord) return false; const a=current.questionKeys||[], b=incoming.questionKeys||[]; if(a.length!==b.length) return false; for(let i=0;i<a.length;i++){ if(String(a[i])!==String(b[i])) return false; } return true; }
+function downloadJson(filename,data){ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
+function isTodayNewWord(item){ return !!(item && Array.isArray(state.dailyNewIds) && state.dailyNewIds.includes(item.id)); }
+function wasAddedAsNewWord(item){ return !!(item && Array.isArray(state.dailyAddedIds) && state.dailyAddedIds.includes(item.id)); }
+function getUnlockedWordIds(){
+  const idSet = new Set(Array.isArray(state.dailyNewIds) ? state.dailyNewIds : []);
+  words.forEach(w=>{ if((state.counts[w.id]||0) > 0) idSet.add(w.id); });
+  return Array.from(idSet);
+}
+function getUnlockedWords(){
+  const unlockedIds = new Set(getUnlockedWordIds());
+  return words.filter(w=>unlockedIds.has(w.id));
+}
+function getTodayLearnedWords(){
+  const addedIds = new Set(Array.isArray(state.dailyAddedIds) ? state.dailyAddedIds : []);
+  return words.filter(w=>addedIds.has(w.id) && (state.counts[w.id]||0) > 0);
+}
+function getUnlockedOrderIndex(item){ return Array.isArray(state.dailyNewIds) ? state.dailyNewIds.indexOf(item.id) : -1; }
+function getRecencyWeight(item){
+  const idx = getUnlockedOrderIndex(item);
+  const seen = state.counts[item.id] || 0;
+  if(idx === -1) return seen > 0 ? 1 : 0;
+  const distanceFromNewest = state.dailyNewIds.length - 1 - idx;
+  if(seen === 0) return 3.2;
+  if(distanceFromNewest <= 4) return 2.4;
+  if(distanceFromNewest <= 14) return 1.8;
+  return 1.15;
+}
+function getDifficultyWeight(item){ return isDifficultItem(item) ? 2.6 : 1; }
+function getPracticeWeight(item){
+  const seen = state.counts[item.id] || 0;
+  if(seen === 0) return 1.35;
+  if(seen === 1) return 1.15;
+  return 1;
+}
+function getCardWeight(item){ return getRecencyWeight(item) * getDifficultyWeight(item) * getPracticeWeight(item); }
+function startCurrentGroupIfNeeded(startIndex=state.currentGroupIndex){
+  if(getAddableNewWordCount() <= 0) return false;
+  for(let i=Math.max(0, Number(startIndex)||0); i<groups.length; i++){
+    const group=groups[i];
+    if(!group) continue;
+    const alreadyStarted=state.groupStarted.includes(group.key);
+    const nextWord = group.items.find(w=>!(state.dailyNewIds||[]).includes(w.id) && (state.counts[w.id]||0) < REQUIRED_COUNT);
+    if(!nextWord){
+      if(!alreadyStarted) state.groupStarted.push(group.key);
+      continue;
+    }
+    if(!alreadyStarted) state.groupStarted.push(group.key);
+    state.dailyNewIds.push(nextWord.id);
+    if(!state.dailyAddedIds.includes(nextWord.id)) state.dailyAddedIds.push(nextWord.id);
+    return true;
+  }
+  return false;
+}
+function addNewWordsToPool(requestedCount=DAILY_LIMIT_STEP){
+  let addedCount=0;
+  const target=Math.max(0, Number(requestedCount)||0);
+  while(addedCount < target && getAddableNewWordCount() > 0){
+    const started = startCurrentGroupIfNeeded(state.currentGroupIndex);
+    if(!started) break;
+    addedCount += 1;
+  }
+  return addedCount;
+}
+function isGroupCompleted(group){ if(!group) return true; return group.items.every(w=>(state.counts[w.id]||0)>=REQUIRED_COUNT); }
+function advanceGroupIfEligible(){ while(state.currentGroupIndex<groups.length){ const currentGroup=groups[state.currentGroupIndex]; if(!currentGroup) return; const hasAnyActiveNewWord = currentGroup.items.some(w=>state.dailyNewIds.includes(w.id)); if(!hasAnyActiveNewWord && !isGroupCompleted(currentGroup)) return; if(!isGroupCompleted(currentGroup)) return; if(!state.completedGroups.includes(currentGroup.key)) state.completedGroups.push(currentGroup.key); state.currentGroupIndex += 1; saveState({autoPush:false}); } }
+function getCurrentGroup(){ return groups[state.currentGroupIndex]||null; }
+function randomPick(arr){ return arr.length?arr[Math.floor(Math.random()*arr.length)]:null; }
+function weightedPick(arr){
+  if(!arr.length) return null;
+  let candidates = [...arr];
+  if(currentCard && candidates.length > 1){
+    const currentKey = getCardKey(currentCard);
+    candidates = candidates.filter(item => getCardKey(item) !== currentKey);
+    if(!candidates.length) candidates = [...arr];
+  }
+  const total = candidates.reduce((sum,item)=>sum + getCardWeight(item), 0);
+  if(total <= 0) return candidates[0] || null;
+  let r = Math.random() * total;
+  for(const item of candidates){
+    r -= getCardWeight(item);
+    if(r <= 0) return item;
+  }
+  return candidates[candidates.length - 1];
+}
+function pickNextCard(){
+  const unlockedWords = getUnlockedWords();
+  if(!unlockedWords.length) return null;
+  return weightedPick(unlockedWords);
+}
+function updateHeaderUI(){
+  const addedNewCount = getTodayAddedCount();
+  dailyText.textContent=`${addedNewCount} / ${getDailyCap()}`;
+  dailyFill.style.width=`${Math.min(100, addedNewCount / getDailyCap() * 100)}%`;
+  const totalLearned=words.filter(w=>(state.counts[w.id]||0)>0).length;
+  totalLearnedText.textContent=`${totalLearned} / ${words.length}`;
+  if(isBrowseMode()){
+    syncBrowseIndexWithCurrentCard();
+    if(cardProgressText) cardProgressText.textContent=`${activeBrowseIndex >= 0 ? activeBrowseIndex + 1 : 0}/${activeBrowseItems.length}`;
+    prevBtns().forEach(btn => btn.disabled = !currentCard || activeBrowseIndex <= 0);
+    nextBtns().forEach(btn => btn.disabled = !currentCard || activeBrowseIndex < 0 || activeBrowseIndex >= activeBrowseItems.length-1);
+    seenBtns().forEach(btn => btn.disabled = !currentCard);
+  }else{
+    if(cardProgressText) cardProgressText.textContent=`${totalLearned}/${words.length}`;
+    prevBtns().forEach(btn => btn.disabled = historyIndex <= 0);
+    nextBtns().forEach(btn => btn.disabled = !words.length);
+    seenBtns().forEach(btn => btn.disabled = !currentCard || state.currentGroupIndex >= groups.length);
+  }
+  difficultBtns().forEach(btn => btn.disabled = !currentCard);
+  updateDeckMetaText();
+}
+function renderCard(){ if(!currentCard) return; wordText.textContent=currentCard['單字']||'—'; frontPhoneticText.textContent=currentCard['音標']||''; quickWordText.textContent=currentCard['單字']||'—'; quickMeaningText.textContent=currentCard['定義']||'—'; quickExampleText.textContent=currentCard['範例']||'—'; backWordText.textContent=currentCard['單字']||'—'; posText.textContent=currentCard['詞性']||'—'; meaningText.textContent=currentCard['定義']||'—'; usageText.textContent=currentCard['用法']||'—'; wordFormText.textContent=currentCard['詞性變化']||'—'; tenseText.textContent=currentCard['三態（現在式-過去式-過去分詞）']||'—'; vingText.textContent=currentCard['現在分詞（V-ing）']||'—'; collocationText.textContent=currentCard['常見搭配']||'—'; relatedText.textContent=currentCard['相關字']||currentCard['關鍵字']||'—'; synonymsText.textContent=currentCard['同義字']||'—'; antonymsText.textContent=currentCard['反義字']||'—'; exampleText.textContent=currentCard['範例']||'—'; updateHeaderUI(); updateDifficultButtonUI(); }
+function showStage(stage){ cardStage=stage; frontFace.classList.toggle('hidden',stage!==1); quickFace.classList.toggle('hidden',stage!==2); backFace.classList.toggle('hidden',stage!==3); if(stage===3 && backScroll) backScroll.scrollTop=0; updateCardFooterNote(); }
+function cardNextStage(){ if(!currentCard) return; if(cardStage===1) showStage(2); else if(cardStage===2) showStage(3); else if(isBrowseMode()){ renderWordList(); showWordListView(studySessionType); } else markSeenOnce(); }
+function pushHistory(cardObj){ if(historyIndex<history.length-1) history=history.slice(0,historyIndex+1); history.push(cardObj); historyIndex=history.length-1; }
+function showSpecificCard(cardObj){ currentCard=cardObj; showStage(1); renderCard(); updateDifficultButtonUI(); }
+function showNextGeneratedCard(){ maybeDailyReset(); advanceGroupIfEligible(); const cardObj=pickNextCard(); if(!cardObj){ currentCard=null; showStage(1); if(words.length){ wordText.textContent='請按「增加新字 +5」開始'; frontPhoneticText.textContent=''; } else { wordText.textContent='請先載入題庫'; frontPhoneticText.textContent=''; } updateHeaderUI(); statusText.textContent=words.length ? '目前沒有可顯示的單字；若想繼續加入新字，請按「增加新字 +5」。' : '請先從上方題庫區新增或載入題庫。'; return; } pushHistory(cardObj); showSpecificCard(cardObj); if(studySessionType==='memorize' && !cardView.classList.contains('screen-hidden')) showCardView(); }
+function removeCompletedWordFromNewPool(item){
+  if(!item || !Array.isArray(state.dailyNewIds)) return false;
+  if((state.counts[item.id]||0) < REQUIRED_COUNT) return false;
+  const beforeLength = state.dailyNewIds.length;
+  state.dailyNewIds = state.dailyNewIds.filter(id=>id !== item.id);
+  return state.dailyNewIds.length !== beforeLength;
+}
+function markSeenOnce(){
+  if(!currentCard) return;
+  let changed = false;
+  if(isBrowseMode()){
+    syncBrowseIndexWithCurrentCard();
+    state.counts[currentCard.id]=(state.counts[currentCard.id]||0)+1;
+    changed = true;
+    if(removeCompletedWordFromNewPool(currentCard)) changed = true;
+    if(changed) commitStateChange();
+    const nextIndex=activeBrowseIndex < activeBrowseItems.length - 1 ? activeBrowseIndex + 1 : activeBrowseIndex;
+    renderWordList();
+    if(nextIndex >= 0 && nextIndex < getBrowseItemsForMode(studySessionType).length) openBrowseCardAt(nextIndex);
+    else showWordListView(studySessionType);
+    return;
+  }
+  const shouldCount = isTodayNewWord(currentCard) || (state.counts[currentCard.id]||0) > 0;
+  if(shouldCount){
+    state.counts[currentCard.id]=(state.counts[currentCard.id]||0)+1;
+    changed = true;
+    if(removeCompletedWordFromNewPool(currentCard)) changed = true;
+  }
+  if(changed) commitStateChange();
+  showNextGeneratedCard();
+}
+async function readCsvFile(file){ const buffer=await file.arrayBuffer(); const encodings=['utf-8','big5','gb18030','utf-16le']; for(const enc of encodings){ try{ const text=new TextDecoder(enc).decode(buffer); const parsed=parseCSV(text); if(parsed.length&&validateColumns(parsed)) return {parsed,encoding:enc}; }catch(e){} } return {parsed:[],encoding:''}; }
+async function fetchDeckCsv(url){
+  const raw=String(url||'').trim();
+  if(isGoogleSheetUrl(raw)){
+    let jsonpError='';
+    try{
+      return await fetchGoogleSheetViaJsonp(raw);
+    }catch(err){
+      jsonpError=err?.message || String(err);
+    }
+    const candidates=buildGoogleSheetCsvCandidates(raw);
+    let lastError='';
+    for(const candidate of candidates){
+      try{
+        const res=await fetch(candidate, {cache:'no-store'});
+        if(!res.ok) throw new Error(`讀取失敗（${res.status}）`);
+        const text=await res.text();
+        const parsed=parseCSV(text);
+        if(!parsed.length) throw new Error('沒有讀到有效資料');
+        if(!validateColumns(parsed)) throw new Error('題庫欄位不足，至少需要：word_id、單字、定義');
+        return {parsed,normalized:buildGoogleSheetReadableUrl(raw)};
+      }catch(err){
+        lastError=err?.message || String(err);
+      }
+    }
+    throw new Error(`Google Sheets 同步失敗。請確認已開啟「知道連結的任何人可檢視」。系統已先嘗試 Google Sheets 直接讀取，再嘗試 CSV 讀取；目前失敗。JSONP：${jsonpError || '未知錯誤'}；CSV：${lastError || '未知錯誤'}`);
+  }
+  try{
+    const res=await fetch(raw, {cache:'no-store'});
+    if(!res.ok) throw new Error(`讀取失敗（${res.status}）`);
+    const text=await res.text();
+    const parsed=parseCSV(text);
+    if(!parsed.length) throw new Error('沒有讀到有效資料');
+    if(!validateColumns(parsed)) throw new Error('題庫欄位不足，至少需要：word_id、單字、定義');
+    return {parsed,normalized:raw};
+  }catch(err){
+    throw new Error(err?.message || '網址同步失敗');
+  }
+}
+function clearCardUI(){ currentCard=null; words=[]; groups=[]; history=[]; historyIndex=-1; activeBrowseItems=[]; activeBrowseIndex=-1; studySessionType='memorize'; if(cardProgressText) cardProgressText.textContent='0/0'; wordText.textContent='請先載入題庫'; frontPhoneticText.textContent=''; quickWordText.textContent='—'; quickMeaningText.textContent='—'; quickExampleText.textContent='—'; backWordText.textContent='—'; posText.textContent='—'; meaningText.textContent='—'; usageText.textContent='—'; wordFormText.textContent='—'; tenseText.textContent='—'; vingText.textContent='—'; collocationText.textContent='—'; relatedText.textContent='—'; synonymsText.textContent='—'; antonymsText.textContent='—'; exampleText.textContent='—'; if(wordListContainer) wordListContainer.innerHTML=''; if(wordListEmpty) wordListEmpty.classList.add('hidden'); showStage(1); updateHeaderUI(); updateDifficultButtonUI(); updateStudyDeckTitle(); updateCardFooterNote(); }
+function startApp(items,sourceLabel=''){ words=items; if(!validateColumns(words)){ statusText.textContent='載入失敗：缺少必要欄位'; alert('CSV 至少需要包含：word_id、單字、定義'); return; } buildGroups(); loadState(); normalizeState(); maybeDailyReset(); saveWordsToStorage(); const estimatedQuestions=getEstimatedTotalQuestions(words); const gidNote=(currentDeckMeta?.type==='google_sheet' && currentDeckMeta?.url && !getGoogleSheetInfo(currentDeckMeta.url)?.hasExplicitGid) ? '；注意：目前網址未帶 gid，系統是用預設第一個工作表（gid=0）同步' : ''; statusText.textContent=`載入成功：共 ${words.length} 筆單字，估計 ${estimatedQuestions} 題${sourceLabel ? '（'+sourceLabel+'）' : ''}${gidNote}。請按「開始學習」進入模式選擇。`; history=[]; historyIndex=-1; activeBrowseItems=[]; activeBrowseIndex=-1; showNextGeneratedCard(); updateStudyDeckTitle(); updateCardFooterNote(); }
+function upsertCurrentDeckMeta(){ if(!currentDeckMeta) return; const idx=decks.findIndex(d=>d.id===currentDeckMeta.id); if(idx>=0) decks[idx]={...decks[idx], ...currentDeckMeta}; else decks.push(currentDeckMeta); saveDecks({markUpdated:true, autoPush:true}); renderDeckSelect(); updateDeckMetaText(); }
+function getDeckById(id){ return decks.find(d=>d.id===id) || null; }
+function renderDeckSelect(){
+  const selected=currentDeckId || deckSelect.value || learningDeckSelect?.value || '';
+  const optionsHtml='<option value="">請選擇題庫</option>' + decks.map(d=>`<option value="${d.id}">${escapeHtml(d.name || '(未命名題庫)')}</option>`).join('');
+  deckSelect.innerHTML=optionsHtml;
+  if(learningDeckSelect) learningDeckSelect.innerHTML=optionsHtml;
+  const finalValue = selected && decks.some(d=>d.id===selected) ? selected : '';
+  deckSelect.value = finalValue;
+  if(learningDeckSelect) learningDeckSelect.value = finalValue;
+}
+function escapeHtml(str){ return String(str||'').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[s])); }
+function updateDeckMetaText(){
+  const deck=currentDeckMeta || getDeckById(deckSelect.value);
+  if(!deck){ deckMetaText.textContent='尚未建立題庫。可貼上 CSV / Google Sheets 網址並新增題庫。'; return; }
+  const done=words.length ? words.filter(w=>(state.counts[w.id]||0)>=REQUIRED_COUNT).length : 0;
+  const liveTotalWords = words.length || deck.totalWords || 0;
+  deckMetaText.textContent=`目前題庫：${deck.name}
+來源：${deckTypeLabel(deck)}
+網址：${deck.url || '未設定網址'}
+雲端題庫鍵：${deck.cloudDeckKey || '未建立'}
+單字：共 ${liveTotalWords} 筆
+已完成單字：${done}
+最後同步：${deck.lastSyncedAt ? new Date(deck.lastSyncedAt).toLocaleString('zh-TW') : '尚未同步'}`;
+}
+function fillDeckForm(deck){ deckNameInput.value=deck?.name||''; deckUrlInput.value=deck?.url||''; }
+function setCurrentDeck(deck){
+  currentDeckMeta=deck?normalizeDeckMeta(deck):null;
+  currentDeckId=currentDeckMeta?.id||'';
+  loadSyncMeta();
+  renderDeckSelect();
+  if(currentDeckId){
+    deckSelect.value=currentDeckId;
+    if(learningDeckSelect) learningDeckSelect.value=currentDeckId;
+  }
+  saveActiveDeckId();
+  fillDeckForm(currentDeckMeta);
+  updateDeckMetaText();
+  updateCloudMetaText();
+  updateStudyDeckTitle();
+}
+async function loadDeckById(id,{forceSync=false, requestSeq=null}={}){
+  const activeRequestSeq = requestSeq ?? (++deckLoadRequestSeq);
+  const deck=getDeckById(id);
+  if(!deck) return;
+  setCurrentDeck(deck);
+  let cached=loadWordsFromStorage();
+  if(cached.length && validateColumns(cached)){
+    startApp(cached,'本機快取');
+  }else{
+    clearCardUI();
+    loadState();
+    statusText.textContent='此題庫尚未有快取資料，準備同步。';
+  }
+  if(forceSync || !cached.length){
+    if(!deck.url){ statusText.textContent='此題庫沒有網址，請先補上題庫網址後再載入。'; return; }
+    try{
+      statusText.textContent=`正在同步題庫：${deck.name}`;
+      const result=await fetchDeckCsv(deck.url);
+      if(activeRequestSeq !== deckLoadRequestSeq) return;
+      currentDeckMeta=normalizeDeckMeta({...deck, url:result.normalized || deck.url, normalizedUrl:result.normalized, cloudDeckKey:buildStableCloudDeckKey(result.normalized || deck.url), type:isGoogleSheetUrl(deck.url)?'google_sheet':'csv', lastSyncedAt:new Date().toISOString()});
+      upsertCurrentDeckMeta();
+      startApp(result.parsed,'網址同步成功');
+    }catch(err){
+      if(activeRequestSeq !== deckLoadRequestSeq) return;
+      statusText.textContent=`同步失敗：${err.message}`;
+      if(!cached.length) clearCardUI();
+    }
+  }
+  if(activeRequestSeq !== deckLoadRequestSeq) return;
+  await reconcileCloudProgressOnLoad();
+  if(activeRequestSeq !== deckLoadRequestSeq) return;
+}
+function createDeckFromForm(existingDeck=null){
+  const name=deckNameInput.value.trim();
+  const url=deckUrlInput.value.trim();
+  if(!name){ alert('請先輸入題庫名稱。'); return null; }
+  if(!url){ alert('請先輸入題庫網址。'); return null; }
+  const normalizedUrl=normalizeDeckUrl(url);
+  const cloudDeckKey=buildStableCloudDeckKey(normalizedUrl);
+  if(!cloudDeckKey){ alert('題庫網址格式不正確。'); return null; }
+  return normalizeDeckMeta({
+    ...(existingDeck||{}),
+    id: existingDeck?.id || newDeckId(),
+    name,
+    url: normalizedUrl,
+    normalizedUrl,
+    cloudDeckKey,
+    type:isGoogleSheetUrl(normalizedUrl)?'google_sheet':'csv',
+    createdAt: existingDeck?.createdAt || new Date().toISOString(),
+    updatedAt: existingDeck ? new Date().toISOString() : (existingDeck?.updatedAt || ''),
+    lastSyncedAt: existingDeck?.lastSyncedAt || '',
+    totalWords: Number(existingDeck?.totalWords)||0,
+    totalGroups: Number(existingDeck?.totalGroups)||0
+  });
+}
+function addDeck(){
+  const deck=createDeckFromForm();
+  if(!deck) return;
+  const duplicate=decks.find(d=>d.cloudDeckKey===deck.cloudDeckKey);
+  if(duplicate){
+    alert(`這份題庫網址已存在：${duplicate.name}`);
+    setCurrentDeck(duplicate);
+    return;
+  }
+  decks.push(deck); saveDecks(); setCurrentDeck(deck); renderDeckSelect(); statusText.textContent=`已新增題庫：${deck.name}。可按「載入題庫」或「重新同步」。`;
+}
+function updateDeck(){
+  const id=deckSelect.value || currentDeckId;
+  const deck=getDeckById(id);
+  if(!deck){ alert('請先從下拉選單選擇要更新的題庫。'); return; }
+  const updated=createDeckFromForm(deck);
+  if(!updated) return;
+  const duplicate=decks.find(d=>d.id!==updated.id && d.cloudDeckKey===updated.cloudDeckKey);
+  if(duplicate){
+    alert(`這份題庫網址已被其他題庫使用：${duplicate.name}`);
+    return;
+  }
+  currentDeckMeta=updated; currentDeckId=updated.id; upsertCurrentDeckMeta(); setCurrentDeck(updated); statusText.textContent=`已更新題庫設定：${updated.name}`;
+}
+function deleteDeck(){
+  const id=deckSelect.value || currentDeckId;
+  const deck=getDeckById(id);
+  if(!deck){ alert('請先選擇題庫。'); return; }
+  if(!confirm(`確定刪除題庫「${deck.name}」以及它的本機進度嗎？`)) return;
+  localStorage.removeItem(`deck_data_${deck.id}`);
+  localStorage.removeItem(`deck_state_${deck.id}`);
+  localStorage.removeItem(`deck_sync_meta_${deck.id}`);
+  decks=decks.filter(d=>d.id!==deck.id); saveDecks();
+  if(currentDeckId===deck.id){ currentDeckId=''; currentDeckMeta=null; syncMeta=defaultSyncMeta(); saveActiveDeckId(); clearCardUI(); }
+  renderDeckSelect(); fillDeckForm(null); updateDeckMetaText(); statusText.textContent=`已刪除題庫：${deck.name}`;
+}
+addDailyLimitBtn.addEventListener('click', ()=>addDailyLimit());
+resetBtn.addEventListener('click', async ()=>{
+  if(!currentDeckId){ alert('請先載入題庫。'); return; }
+  resetState({blockCloud:false});
+  if(words.length){
+    buildGroups();
+    history=[];
+    historyIndex=-1;
+    showNextGeneratedCard();
+  }
+  if(hasCloudSyncConfig()){
+    statusText.textContent='正在重設本機與雲端進度...';
+    await pushCloudProgress();
+  }else{
+    statusText.textContent='已重設本機學習進度。尚未設定雲端同步，因此未同步到雲端。';
+  }
+});
+clearBtn.addEventListener('click', ()=>{ if(!currentDeckId){ alert('請先選擇題庫。'); return; } clearStoredCsv(); resetState({blockCloud:true, blockReason:'local_clear'}); clearCardUI(); statusText.textContent='已清除目前題庫的本機快取與進度，雲端未變更。'; });
+
+function addDailyLimit(step=DAILY_LIMIT_STEP){
+  if(!words.length){ alert('請先載入題庫。'); return; }
+  maybeDailyReset();
+  const requestedCount=Math.max(1, Number(step)||DAILY_LIMIT_STEP);
+  const addableBefore=getAddableNewWordCount();
+  if(addableBefore<=0){
+    updateHeaderUI();
+    if(getDailyRemainingQuota()<=0) statusText.textContent=`今日新增額度已達 ${getDailyCap()}，請明天再加入新字。`;
+    else if(getNewPoolRemainingQuota()<=0) statusText.textContent=`進行中新字池已滿 ${getDailyCap()}，請先把部分新字練熟後再加入。`;
+    else statusText.textContent='目前沒有更多可加入的新字。';
+    return;
+  }
+  const addedCount=addNewWordsToPool(Math.min(requestedCount, addableBefore));
+  if(addedCount<=0){
+    updateHeaderUI();
+    statusText.textContent='目前沒有更多可加入的新字。';
+    return;
+  }
+  commitStateChange();
+  updateHeaderUI();
+  statusText.textContent=`本次新增 ${addedCount} 個單字。今日已新增 ${getTodayAddedCount()}/${getDailyCap()}，進行中新字池 ${getActiveNewPoolCount()}/${getDailyCap()}。`;
+  if(state.currentGroupIndex < groups.length || state.dailyNewIds.length) showNextGeneratedCard();
+}
+
+addDeckBtn.addEventListener('click', addDeck);
+saveDeckBtn.addEventListener('click', updateDeck);
+deleteDeckBtn.addEventListener('click', deleteDeck);
+loadDeckBtn.addEventListener('click', ()=>{ const id=deckSelect.value; if(!id){ alert('請先選擇題庫。'); return; } loadDeckById(id); });
+syncDeckBtn.addEventListener('click', ()=>{ const id=deckSelect.value || currentDeckId; if(!id){ alert('請先選擇題庫。'); return; } loadDeckById(id,{forceSync:true}); });
+saveCloudConfigBtn.addEventListener('click', async ()=>{
+  cloudConfig.scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput.value);
+  cloudConfig.userKey=String(cloudUserKeyInput.value||'').trim();
+  saveCloudConfig();
+  statusText.textContent='已儲存雲端同步設定，正在同步題庫清單與進度設定...';
+  await reconcileCloudDeckIndex({silent:true});
+  renderDeckSelect();
+  statusText.textContent='已儲存雲端同步設定，並完成題庫清單同步檢查。';
+});
+if(managerCollapseBtn){
+  managerCollapseBtn.addEventListener('click', ()=>{
+    const isCollapsed = !!managerPanelBody && managerPanelBody.classList.contains('hidden');
+    setManagerPanelCollapsed(!isCollapsed);
+  });
+}
+pushCloudBtn.addEventListener('click', ()=>pushCloudProgress());
+pullCloudBtn.addEventListener('click', ()=>pullCloudProgress());
+async function handleDeckSelectionChange(selectedId=null){
+  const id=selectedId ?? deckSelect.value;
+  deckSelect.value=id || '';
+  if(learningDeckSelect) learningDeckSelect.value=id || '';
+  const deck=getDeckById(id);
+  fillDeckForm(deck);
+  if(!deck){
+    currentDeckMeta=null;
+    currentDeckId='';
+    syncMeta=defaultSyncMeta();
+    saveActiveDeckId();
+    clearCardUI();
+    updateDeckMetaText();
+    updateCloudMetaText();
+    return;
+  }
+  statusText.textContent=`已切換到題庫：${deck.name}，正在檢查本機與雲端最新資料...`;
+  await loadDeckById(id);
+}
+
+deckSelect.addEventListener('change', ()=>{ handleDeckSelectionChange(deckSelect.value); });
+if(learningDeckSelect){
+  learningDeckSelect.addEventListener('change', ()=>{ handleDeckSelectionChange(learningDeckSelect.value); });
+}
+
+deckNameInput.addEventListener('input', ()=>{ if(!deckSelect.value && !currentDeckId) updateDeckMetaText(); });
+deckUrlInput.addEventListener('input', ()=>{});
+
+function openHelpModal(){ helpModal.classList.remove('hidden'); }
+function closeHelpModal(){ helpModal.classList.add('hidden'); }
+helpBtn.addEventListener('click', openHelpModal);
+closeHelpBtn.addEventListener('click', closeHelpModal);
+helpModal.addEventListener('click', e=>{ if(e.target===helpModal) closeHelpModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && !helpModal.classList.contains('hidden')) closeHelpModal(); });
+window.addEventListener('focus', ()=>{ const resetChanged=maybeDailyReset(); if(resetChanged){ updateHeaderUI(); if(isBrowseMode()) refreshBrowseUIAfterStateChange(); } if(hasCloudDeckIndexConfig()) reconcileCloudDeckIndex({silent:true}); });
+window.addEventListener('beforeunload', ()=>{ if(canAutoPushNow()) pushCloudProgressSilent(); if(hasCloudDeckIndexConfig()) pushCloudDeckIndexSilent(); });
+enterStudyBtn.addEventListener('click', ()=>enterStudyScreen());
+backHomeBtn.addEventListener('click', ()=>showHomeScreen());
+memorizeModeBtn.addEventListener('click', ()=>startMemorizeMode());
+deckWordModeBtn.addEventListener('click', ()=>openBrowseMode('browse_all'));
+difficultWordModeBtn.addEventListener('click', ()=>openBrowseMode('browse_difficult'));
+backToStudyModesBtn.addEventListener('click', ()=>showStudyModeSelection());
+
+card.addEventListener('click', e=>{ if(e.target.closest('button')) return; cardNextStage(); });
+wordListContainer.addEventListener('click', e=>{ const trigger=e.target.closest('[data-word-index]'); if(!trigger) return; openBrowseCardAt(Number(trigger.dataset.wordIndex)); });
+prevBtns().forEach(btn=>btn.addEventListener('click', ()=>{ if(isBrowseMode()){ syncBrowseIndexWithCurrentCard(); if(activeBrowseIndex>0) openBrowseCardAt(activeBrowseIndex-1); return; } if(historyIndex>0){ historyIndex-=1; showSpecificCard(history[historyIndex]); } }));
+nextBtns().forEach(btn=>btn.addEventListener('click', ()=>{ if(!words.length) return; if(isBrowseMode()){ syncBrowseIndexWithCurrentCard(); if(activeBrowseIndex>=0 && activeBrowseIndex<activeBrowseItems.length-1) openBrowseCardAt(activeBrowseIndex+1); return; } if(historyIndex<history.length-1){ historyIndex+=1; showSpecificCard(history[historyIndex]); } else showNextGeneratedCard(); }));
+seenBtns().forEach(btn=>btn.addEventListener('click', ()=>markSeenOnce()));
+difficultBtns().forEach(btn=>btn.addEventListener('click', (e)=>{ e.stopPropagation(); toggleDifficultCurrentCard(); }));
+
+speakWordBtn.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(currentCard['單字']); });
+speakQuickWordBtn.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(currentCard['單字']); });
+speakQuickExampleBtn.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(currentCard['範例']); });
+speakWordBtnBack.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(currentCard['單字']); });
+speakExampleBtn.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(currentCard['範例']); });
+
+exportProgressBtn.addEventListener('click', ()=>{ if(!words.length || !currentDeckId){ alert('請先載入題庫再匯出進度。'); return; } const payload=buildProgressPayload(); const stamp=new Date().toISOString().slice(0,19).replace(/[:T]/g,'-'); downloadJson(`flashcard_progress_${currentDeckMeta?.name||currentDeckId}_${stamp}.json`, payload); statusText.textContent='已匯出目前題庫進度檔。'; });
+importProgressBtn.addEventListener('click', ()=>{ if(!words.length){ alert('請先載入對應題庫，再匯入進度檔。'); return; } progressFile.value=''; progressFile.click(); });
+progressFile.addEventListener('change', async e=>{
+  const file=e.target.files?.[0]; if(!file) return; let payload = null;
+  try{ const buf = await file.arrayBuffer(); for(const enc of ['utf-8','utf-16le','big5']){ try{ const textContent = new TextDecoder(enc).decode(buf); payload = JSON.parse(textContent); break; }catch(_){} } }catch(err){ console.error(err); }
+  if(!payload){ alert('匯入失敗，請確認進度檔為有效的 JSON。'); return; }
+  if(!signaturesMatch(payload)){ alert('這份進度檔和目前載入的題庫不相符，無法匯入。'); return; }
+  if(!payload.state || typeof payload.state !== 'object'){ alert('進度檔格式不正確。'); return; }
+  state = buildStateFromSource(payload.state);
+  normalizeState(); maybeDailyReset(); history = []; historyIndex = -1; syncMeta.dirty=true; syncMeta.autoPushBlocked=true; syncMeta.blockReason='local_import'; saveState({autoPush:false, markUpdated:true}); saveSyncMeta(); statusText.textContent='已成功匯入目前題庫的進度檔，雲端未變更；若要覆蓋雲端，請手動按「上傳雲端進度」。'; progressFile.value = ''; showNextGeneratedCard();
+});
+
+async function bootstrap(){
+  cloudConfig=loadCloudConfig();
+  deckRegistryMeta=loadDeckRegistryMeta();
+  loadDecks();
+  renderDeckSelect();
+  updateCloudMetaText();
+  setManagerPanelCollapsed(false);
+  showHomeScreen();
+  await reconcileCloudDeckIndex({silent:true});
+  renderDeckSelect();
+  const activeId=loadActiveDeckId();
+  if(activeId && getDeckById(activeId)){
+    await loadDeckById(activeId);
+  }else{
+    clearCardUI();
+    syncMeta=defaultSyncMeta();
+    updateHeaderUI();
+    updateDeckMetaText();
+    updateCloudMetaText();
+  }
+}
+
+updateHeaderUI();
+updateDifficultButtonUI();
+bootstrap();
+</script>
+</body>
+</html>
