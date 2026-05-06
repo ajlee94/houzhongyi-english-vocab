@@ -274,7 +274,6 @@ input[type="file"]{
 .word-list-word{color:#f4fbff}
 .word-list-item.is-difficult{border-color:#d99a6b;box-shadow:0 0 0 2px rgba(194,124,44,.12) inset}
 .modal-overlay{background:rgba(3,8,12,.72);backdrop-filter:blur(4px)}
-.cloud-sync-section{display:none}
 
 @media (max-width:700px){
   .wrap{padding:18px 12px 38px}
@@ -522,7 +521,7 @@ const APP_DECKS_INDEX_KEY='flashcard_decks_index_v1';
 const APP_DECKS_META_KEY='flashcard_decks_meta_v1';
 const ACTIVE_DECK_ID_KEY='flashcard_active_deck_id_v1';
 const CLOUD_SYNC_CONFIG_KEY='flashcard_cloud_sync_config_v1';
-const CLOUD_SYNC_DISABLED=true;
+const CLOUD_SYNC_DISABLED=false;
 const BUILT_IN_DECKS=[
   {id:'builtin_cmu_114', name:'中國醫 114 英文單字庫', url:'data/114_cmu_english_vocab.csv', normalizedUrl:'data/114_cmu_english_vocab.csv', cloudDeckKey:'data/114_cmu_english_vocab.csv', type:'csv', createdAt:'2026-05-06T00:00:00.000Z', updatedAt:'2026-05-06T00:00:00.000Z', lastSyncedAt:'', totalWords:381, totalGroups:0, builtIn:true}
 ];
@@ -590,7 +589,7 @@ function getDailyRemainingQuota(){ return Math.max(0, getDailyCap() - getTodayAd
 function getNewPoolRemainingQuota(){ return Math.max(0, getDailyCap() - getActiveNewPoolCount()); }
 function getAddableNewWordCount(){ return Math.max(0, Math.min(getDailyRemainingQuota(), getNewPoolRemainingQuota())); }
 function defaultDeckRegistryMeta(){ return {updatedAt:''}; }
-function defaultCloudConfig(){ return {scriptUrl:'', userKey:'', lastPushAt:'', lastPullAt:''}; }
+function defaultCloudConfig(){ return {scriptUrl:'https://script.google.com/macros/s/AKfycbyhK5odtV6a13q3m0RHOA4gyMaW2Y9LS1RuOB26p34v7_bq2Jv0drGdbcuKWp10PwZe/exec', userKey:'aj_vocab', lastPushAt:'', lastPullAt:''}; }
 function defaultSyncMeta(){ return {dirty:false,autoPushBlocked:false,blockReason:''}; }
 function currentDeckDataKey(){ return currentDeckId ? `deck_data_${currentDeckId}` : ''; }
 function currentDeckSyncMetaKey(){ return currentDeckId ? `deck_sync_meta_${currentDeckId}` : ''; }

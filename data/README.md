@@ -10,5 +10,5 @@
 
 - GitHub Pages 讀取根目錄 `index.html`。
 - App 題庫資料從 `data/114_cmu_english_vocab.csv` 讀取。
-- App 已取消 Apps Script 同步；題庫更新直接修改此 CSV 後推送到 GitHub。
-- 學習進度只保存在目前瀏覽器。
+- 題庫更新直接修改此 CSV 後推送到 GitHub。
+- 學習進度透過 Apps Script / Google Sheets 同步；本機瀏覽器仍會保留 localStorage 快取。
