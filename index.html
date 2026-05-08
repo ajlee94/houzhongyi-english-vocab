@@ -116,23 +116,30 @@ button,
 .quiz-choice-btn{background:#21355f;border:1px solid #35518a;border-radius:16px;color:#eef4ff;padding:14px;text-align:left;font-size:15px;line-height:1.6}
 .quiz-choice-main{display:block;font-weight:900}
 .quiz-choice-sub{display:block;margin-top:6px;font-size:13px;line-height:1.5;opacity:.9}
-.quiz-choice-btn[disabled]{opacity:1}
+.quiz-choice-btn.is-answered{opacity:1;cursor:pointer}
 .quiz-choice-btn.is-correct{background:#16a34a;border:2px solid #86efac;color:#ffffff;box-shadow:none}
 .quiz-choice-btn.is-wrong{background:#dc2626;border:2px solid #fda4af;color:#ffffff;box-shadow:none}
 .quiz-choice-btn.is-correct .quiz-choice-main,
 .quiz-choice-btn.is-correct .quiz-choice-sub,
 .quiz-choice-btn.is-wrong .quiz-choice-main,
 .quiz-choice-btn.is-wrong .quiz-choice-sub{color:#ffffff;opacity:1;text-shadow:0 1px 2px rgba(0,0,0,.35)}
-.quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled]{background:#213247;border-color:#45627a;color:#d7e7f2}
-.quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled] .quiz-choice-main{color:#edf7ff;opacity:1}
-.quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled] .quiz-choice-sub{color:#bfd1df;opacity:1}
+.quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong){background:#213247;border-color:#45627a;color:#d7e7f2}
+.quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .quiz-choice-main{color:#edf7ff;opacity:1}
+.quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .quiz-choice-sub{color:#bfd1df;opacity:1}
 .quiz-result{color:#cfe0ff;font-size:16px;line-height:1.7;min-height:1.7em;font-weight:900}
 .quiz-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
 .quiz-prompt-label{color:#a9b8d8;font-size:14px;font-weight:800;text-align:center}
 .quiz-spelling-box{display:grid;gap:10px}
-.quiz-spelling-input.is-correct{border-color:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.28)}
-.quiz-spelling-input.is-wrong{border-color:#fb7185;box-shadow:0 0 0 3px rgba(251,113,133,.28)}
+.quiz-spelling-input.is-correct{border-color:#22c55e !important;outline:0;box-shadow:0 0 0 3px rgba(34,197,94,.34) !important}
+.quiz-spelling-input.is-wrong{border-color:#fb7185 !important;outline:0;box-shadow:0 0 0 3px rgba(251,113,133,.34) !important}
 .quiz-spelling-input{width:100%;background:#21355f;border:1px solid #35518a;border-radius:16px;color:#eef4ff;padding:14px;font-size:18px;font-weight:800}
+.quiz-summary{display:grid;gap:14px;background:#fff8e9;border:1px solid #f1d9aa;border-radius:18px;padding:18px;color:#4b3526}
+.quiz-summary-score{font-size:28px;font-weight:900;text-align:center}
+.quiz-summary-title{font-size:16px;font-weight:900}
+.quiz-summary-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.quiz-summary-list li{background:#fffdf7;border:1px solid #f1d9aa;border-radius:14px;padding:10px 12px;font-weight:900}
+.quiz-summary-word{display:block}
+.quiz-summary-meaning{display:block;margin-top:5px;font-size:13px;line-height:1.5;opacity:.85}
 .word-list-panel{display:grid;gap:14px}
 .word-list-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .word-list-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -407,16 +414,16 @@ body{
   color:#4b3526;
   border-color:#e8c88f;
 }
-.quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled]{
+.quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong){
   background:#fff8e9;
   border-color:#f1d9aa;
   color:#4b3526;
 }
-.quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled] .quiz-choice-main{
+.quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .quiz-choice-main{
   color:#4b3526;
   opacity:1;
 }
-.quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled] .quiz-choice-sub{
+.quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .quiz-choice-sub{
   color:#8a6d4b;
   opacity:1;
 }
@@ -425,6 +432,15 @@ body{
   background:#fffdf7;
   color:#4b3526;
   border-color:#e8c88f;
+}
+.quiz-summary{
+  background:#fff8e9;
+  border-color:#f1d9aa;
+  color:#4b3526;
+}
+.quiz-summary-list li{
+  background:#fffdf7;
+  border-color:#f1d9aa;
 }
 .study-mode-btn span{
   color:#7a5d42;
@@ -712,16 +728,16 @@ body.theme-dark .quiz-choice-btn.is-wrong .quiz-choice-sub{
   opacity:1;
   text-shadow:0 1px 2px rgba(0,0,0,.4);
 }
-body.theme-dark .quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled]{
+body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong){
   background:#162536;
   border-color:#38546b;
   color:#d8e7f0;
 }
-body.theme-dark .quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled] .quiz-choice-main{
+body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .quiz-choice-main{
   color:#edf7ff;
   opacity:1;
 }
-body.theme-dark .quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled] .quiz-choice-sub{
+body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .quiz-choice-sub{
   color:#bfd1df;
   opacity:1;
 }
@@ -762,6 +778,16 @@ body.theme-dark .quiz-spelling-input{
 }
 body.theme-dark .quiz-spelling-input::placeholder{
   color:#b7c9d6;
+}
+body.theme-dark .quiz-summary{
+  background:#162536;
+  border-color:#38546b;
+  color:#f5fbff;
+}
+body.theme-dark .quiz-summary-list li{
+  background:#0f1822;
+  border-color:#304558;
+  color:#edf7ff;
 }
 body.theme-dark .btn-secondary,
 body.theme-dark .collapse-btn,
@@ -977,7 +1003,7 @@ body.theme-dark .pending-deck-meta{color:#a4b4c0}
           </select>
         </div>
       </div>
-      <div class="quiz-question-card">
+      <div class="quiz-question-card" id="quizQuestionCard">
         <div class="quiz-meta" id="quizMetaText">請選擇測驗範圍開始。</div>
         <div class="quiz-prompt-label" id="quizPromptLabel">題目</div>
         <div class="quiz-word" id="quizWordText">單字測驗</div>
@@ -985,6 +1011,11 @@ body.theme-dark .pending-deck-meta{color:#a4b4c0}
         <div class="quiz-spelling-box screen-hidden" id="quizSpellingBox">
           <input id="quizSpellingInput" class="quiz-spelling-input" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="輸入英文單字或片語" />
           <button id="submitQuizSpellingBtn" class="btn-secondary" type="button">送出拼字</button>
+        </div>
+        <div class="quiz-summary screen-hidden" id="quizSummaryView">
+          <div class="quiz-summary-score" id="quizSummaryScoreText">0 / 0</div>
+          <div class="quiz-summary-title">答錯的英文單字</div>
+          <ul class="quiz-summary-list" id="quizWrongList"></ul>
         </div>
         <div class="quiz-result" id="quizResultText"></div>
         <div class="quiz-actions">
@@ -1134,6 +1165,7 @@ const DEFAULT_DAILY_NEW_LIMIT=0;
 const MAX_DAILY_NEW_LIMIT=30;
 const DAILY_LIMIT_STEP=5;
 const REQUIRED_COUNT=5;
+const QUIZ_ROUND_LIMIT=10;
 
 const el=id=>document.getElementById(id);
 const addDailyLimitBtn=el('addDailyLimitBtn'), resetBtn=el('resetBtn'), clearBtn=el('clearBtn');
@@ -1159,7 +1191,7 @@ const posText=el('posText'), meaningText=el('meaningText'), usageText=el('usageT
 const cardProgressText=el('cardProgressText');
 const studyModeView=el('studyModeView'), wordListView=el('wordListView'), cardView=el('cardView');
 const memorizeModeBtn=el('memorizeModeBtn'), deckWordModeBtn=el('deckWordModeBtn'), difficultWordModeBtn=el('difficultWordModeBtn'), quizModeBtn=el('quizModeBtn'), backToStudyModesBtn=el('backToStudyModesBtn'), backToStudyModesFromQuizBtn=el('backToStudyModesFromQuizBtn');
-const quizView=el('quizView'), quizScopeSelect=el('quizScopeSelect'), quizTypeSelect=el('quizTypeSelect'), quizMetaText=el('quizMetaText'), quizPromptLabel=el('quizPromptLabel'), quizWordText=el('quizWordText'), quizChoiceGrid=el('quizChoiceGrid'), quizSpellingBox=el('quizSpellingBox'), quizSpellingInput=el('quizSpellingInput'), submitQuizSpellingBtn=el('submitQuizSpellingBtn'), quizResultText=el('quizResultText'), restartQuizBtn=el('restartQuizBtn'), nextQuizBtn=el('nextQuizBtn');
+const quizView=el('quizView'), quizScopeSelect=el('quizScopeSelect'), quizTypeSelect=el('quizTypeSelect'), quizQuestionCard=el('quizQuestionCard'), quizMetaText=el('quizMetaText'), quizPromptLabel=el('quizPromptLabel'), quizWordText=el('quizWordText'), quizChoiceGrid=el('quizChoiceGrid'), quizSpellingBox=el('quizSpellingBox'), quizSpellingInput=el('quizSpellingInput'), submitQuizSpellingBtn=el('submitQuizSpellingBtn'), quizSummaryView=el('quizSummaryView'), quizSummaryScoreText=el('quizSummaryScoreText'), quizWrongList=el('quizWrongList'), quizResultText=el('quizResultText'), restartQuizBtn=el('restartQuizBtn'), nextQuizBtn=el('nextQuizBtn');
 const wordListTitle=el('wordListTitle'), wordListContainer=el('wordListContainer'), wordListEmpty=el('wordListEmpty'), cardFooterNote=el('cardFooterNote');
 const backScroll=document.querySelector('.back-scroll');
 
@@ -1174,7 +1206,7 @@ let cloudDeckIndexSyncQueued=false;
 
 let words=[], groups=[], currentCard=null, history=[], historyIndex=-1, cardStage=1;
 let studySessionType='memorize';
-let quizScope='today', quizType='en_to_zh', quizItems=[], quizChoices=[], quizCurrent=null, quizAnswered=false, quizScore=0, quizTotal=0;
+let quizScope='today', quizType='en_to_zh', quizItems=[], quizChoices=[], quizCurrent=null, quizAnswered=false, quizScore=0, quizTotal=0, quizRoundTotal=0, quizWrongItems=[];
 let activeBrowseItems=[];
 let activeBrowseIndex=-1;
 let decks=[];
@@ -2357,7 +2389,7 @@ function renderQuizChoice(choice,index,{answered=false}={}){
   const meaning=getQuizMeaning(choice.item);
   const main=quizType==='zh_to_en' ? word : meaning;
   const sub=quizType==='zh_to_en' ? meaning : word;
-  return `<button class="quiz-choice-btn${choice.isAnswer ? ' is-correct' : ''}" type="button" data-quiz-choice="${index}" disabled>
+  return `<button class="quiz-choice-btn is-answered${choice.isAnswer ? ' is-correct' : ''}" type="button" data-quiz-choice="${index}" aria-disabled="true">
     <span class="quiz-choice-main">${escapeHtml(main)}</span>
     <span class="quiz-choice-sub">${escapeHtml(sub)}</span>
   </button>`;
@@ -2368,10 +2400,14 @@ function resetQuizQuestion(){
   quizChoiceGrid.innerHTML='';
   quizSpellingInput.value='';
   quizSpellingInput.disabled=false;
+  quizSpellingInput.readOnly=false;
   quizSpellingInput.classList.remove('is-correct','is-wrong');
   submitQuizSpellingBtn.disabled=false;
+  quizSummaryView.classList.add('screen-hidden');
   quizSpellingBox.classList.add('screen-hidden');
   quizChoiceGrid.classList.remove('screen-hidden');
+  quizPromptLabel.classList.remove('screen-hidden');
+  quizWordText.classList.remove('screen-hidden');
   if(!quizItems.length){
     quizCurrent=null;
     quizWordText.textContent=getQuizScopeLabel();
@@ -2408,9 +2444,11 @@ function resetQuizQuestion(){
 function startQuiz(scope=quizScope,type=quizType){
   quizScope=scope;
   quizType=type;
-  quizItems=shuffleList(getQuizPool(scope));
+  quizItems=shuffleList(getQuizPool(scope)).slice(0, QUIZ_ROUND_LIMIT);
   quizScore=0;
   quizTotal=0;
+  quizRoundTotal=quizItems.length;
+  quizWrongItems=[];
   quizScopeSelect.value=scope;
   quizTypeSelect.value=type;
   resetQuizQuestion();
@@ -2432,6 +2470,7 @@ function answerQuiz(choiceIndex, button){
   const answerText=quizType==='zh_to_en' ? getQuizWord(quizCurrent) : getQuizMeaning(quizCurrent);
   const correct=!!selected?.isAnswer;
   if(correct) quizScore+=1;
+  else quizWrongItems.push(quizCurrent);
   quizChoiceGrid.innerHTML=quizChoices.map((choice,index)=>renderQuizChoice(choice,index,{answered:true})).join('');
   if(button && !correct){
     const wrongBtn=quizChoiceGrid.querySelector(`[data-quiz-choice="${Number(choiceIndex)}"]`);
@@ -2448,12 +2487,40 @@ function answerSpellingQuiz(){
   const userText=quizSpellingInput.value;
   const correct=normalizeQuizAnswer(userText)===normalizeQuizAnswer(answerText);
   if(correct) quizScore+=1;
-  quizSpellingInput.disabled=true;
+  else quizWrongItems.push(quizCurrent);
+  quizSpellingInput.readOnly=true;
   quizSpellingInput.classList.toggle('is-correct', correct);
   quizSpellingInput.classList.toggle('is-wrong', !correct);
   submitQuizSpellingBtn.disabled=true;
   quizResultText.textContent=correct ? '答對。' : `答錯，正確拼法：${answerText}`;
   quizMetaText.textContent=`${getQuizScopeLabel()}｜${getQuizTypeLabel()}｜已答 ${quizTotal} 題｜答對 ${quizScore} 題`;
+}
+function showQuizSummary(){
+  quizAnswered=false;
+  quizCurrent=null;
+  quizChoiceGrid.innerHTML='';
+  quizChoiceGrid.classList.add('screen-hidden');
+  quizSpellingBox.classList.add('screen-hidden');
+  quizPromptLabel.classList.add('screen-hidden');
+  quizWordText.classList.add('screen-hidden');
+  quizSummaryView.classList.remove('screen-hidden');
+  quizResultText.textContent='';
+  nextQuizBtn.disabled=true;
+  quizMetaText.textContent=`${getQuizScopeLabel()}｜${getQuizTypeLabel()}｜本輪完成`;
+  quizSummaryScoreText.textContent=`${quizScore} / ${quizRoundTotal}`;
+  const uniqueWrong=[...new Map(quizWrongItems.map(item=>[getCardKey(item), item])).values()];
+  quizWrongList.innerHTML=uniqueWrong.length
+    ? uniqueWrong.map(item=>`<li><span class="quiz-summary-word">${escapeHtml(getQuizWord(item))}</span><span class="quiz-summary-meaning">${escapeHtml(getQuizMeaning(item))}</span></li>`).join('')
+    : '<li>本輪沒有答錯的單字。</li>';
+}
+function goNextQuizQuestionIfAnswered(){
+  if(!quizAnswered) return false;
+  if(quizTotal>=quizRoundTotal){
+    showQuizSummary();
+    return true;
+  }
+  resetQuizQuestion();
+  return true;
 }
 function startMemorizeMode(){
   studySessionType='memorize';
@@ -3074,12 +3141,25 @@ quizTypeSelect.addEventListener('change', ()=>startQuiz(quizScope, quizTypeSelec
 quizChoiceGrid.addEventListener('click', e=>{
   const trigger=e.target.closest('[data-quiz-choice]');
   if(!trigger) return;
+  if(quizAnswered){
+    goNextQuizQuestionIfAnswered();
+    return;
+  }
   answerQuiz(trigger.dataset.quizChoice, trigger);
 });
 submitQuizSpellingBtn.addEventListener('click', ()=>answerSpellingQuiz());
-quizSpellingInput.addEventListener('keydown', e=>{ if(e.key==='Enter') answerSpellingQuiz(); });
+quizSpellingInput.addEventListener('keydown', e=>{
+  if(e.key!=='Enter') return;
+  e.preventDefault();
+  if(quizAnswered) goNextQuizQuestionIfAnswered();
+  else answerSpellingQuiz();
+});
 restartQuizBtn.addEventListener('click', ()=>startQuiz(quizScope, quizType));
 nextQuizBtn.addEventListener('click', ()=>resetQuizQuestion());
+quizQuestionCard.addEventListener('click', e=>{
+  if(e.target.closest('button, input, select, textarea, a')) return;
+  goNextQuizQuestionIfAnswered();
+});
 
 card.addEventListener('click', e=>{ if(e.target.closest('button')) return; cardNextStage(); });
 wordListContainer.addEventListener('click', e=>{ const trigger=e.target.closest('[data-word-index]'); if(!trigger) return; openBrowseCardAt(Number(trigger.dataset.wordIndex)); });
