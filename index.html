@@ -8,7 +8,7 @@
 :root{--bg:#f5f6fb;--card:#fff;--muted:#8b90a0;--text:#1f2330;--border:#e8eaf2;--primary:#6d63ff;--shadow:0 10px 30px rgba(35,42,70,.08)}
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"Noto Sans TC","Microsoft JhengHei",sans-serif;background:linear-gradient(180deg,#081224 0%, #0b1730 100%);color:var(--text)}
-.wrap{max-width:980px;margin:0 auto;padding:22px 18px 40px}
+.wrap{max-width:980px;margin:0 auto;padding:22px 18px 40px;position:relative}
 .panel,.card-shell{background:#12203f;border-radius:22px;box-shadow:var(--shadow);padding:18px;margin-bottom:18px}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 input[type="file"]{color:#eef4ff;background:#182a52;border:1px solid #2c4477;border-radius:12px;padding:10px 12px}
@@ -86,16 +86,53 @@ button,
 .manage-panel-body{display:grid;gap:14px}
 .manage-section{background:#182a52;border:1px solid #2c4477;border-radius:18px;padding:16px}
 .manage-section-title{color:#eef4ff;font-size:16px;font-weight:800;margin-bottom:12px}
+.section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.section-head .manage-section-title{margin-bottom:4px}
+.section-source-note{color:#a9b8d8;font-size:13px;font-weight:700;line-height:1.6}
+.section-collapse-btn{background:#21355f;color:#eef4ff;border:1px solid #35518a;padding:9px 14px;font-size:13px;border-radius:12px;flex:0 0 auto}
+.section-body{display:block}
 .study-home-layout{display:grid;gap:14px}
 .study-home-layout .top-grid{margin-top:0}
 .study-deck-picker{display:grid;gap:8px}
 .study-deck-picker-label{color:#a9b8d8;font-size:13px;font-weight:800}
 .study-deck-picker select{width:100%;color:#eef4ff;background:#182a52;border:1px solid #2c4477;border-radius:12px;padding:12px 14px;font-size:14px}
 .study-entry-panel{display:grid;gap:14px}
+.study-mode-section{display:grid;gap:10px}
+.study-mode-section-title{color:#a9b8d8;font-size:13px;font-weight:800;letter-spacing:.02em}
 .study-mode-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .study-mode-btn{background:#182a52;border:1px solid #35518a;border-radius:20px;padding:20px 18px;text-align:left;color:#eef4ff;display:grid;gap:8px}
 .study-mode-btn strong{font-size:18px}
 .study-mode-btn span{font-size:14px;line-height:1.7;color:#bdd0f5;font-weight:600}
+.study-mode-grid.quiz-mode-grid{grid-template-columns:minmax(0,1fr)}
+.quiz-panel{display:grid;gap:16px}
+.quiz-control-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.quiz-control-field{display:grid;gap:6px}
+.quiz-control-field label{color:#a9b8d8;font-size:13px;font-weight:800}
+.quiz-control-field select{width:100%;background:#182a52;border:1px solid #35518a;border-radius:16px;color:#eef4ff;padding:13px 14px;font-size:16px;font-weight:800}
+.quiz-question-card{background:#182a52;border:1px solid #2c4477;border-radius:20px;padding:18px;display:grid;gap:14px}
+.quiz-meta{color:#a9b8d8;font-size:14px;font-weight:800}
+.quiz-word{font-size:clamp(34px,6vw,62px);line-height:1.15;color:#f7fbff;font-weight:800;text-align:center;word-break:break-word;white-space:pre-wrap}
+.quiz-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.quiz-choice-btn{background:#21355f;border:1px solid #35518a;border-radius:16px;color:#eef4ff;padding:14px;text-align:left;font-size:15px;line-height:1.6}
+.quiz-choice-main{display:block;font-weight:900}
+.quiz-choice-sub{display:block;margin-top:6px;font-size:13px;line-height:1.5;opacity:.9}
+.quiz-choice-btn[disabled]{opacity:1}
+.quiz-choice-btn.is-correct{background:#16a34a;border:2px solid #86efac;color:#ffffff;box-shadow:none}
+.quiz-choice-btn.is-wrong{background:#dc2626;border:2px solid #fda4af;color:#ffffff;box-shadow:none}
+.quiz-choice-btn.is-correct .quiz-choice-main,
+.quiz-choice-btn.is-correct .quiz-choice-sub,
+.quiz-choice-btn.is-wrong .quiz-choice-main,
+.quiz-choice-btn.is-wrong .quiz-choice-sub{color:#ffffff;opacity:1;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled]{background:#213247;border-color:#45627a;color:#d7e7f2}
+.quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled] .quiz-choice-main{color:#edf7ff;opacity:1}
+.quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled] .quiz-choice-sub{color:#bfd1df;opacity:1}
+.quiz-result{color:#cfe0ff;font-size:16px;line-height:1.7;min-height:1.7em;font-weight:900}
+.quiz-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.quiz-prompt-label{color:#a9b8d8;font-size:14px;font-weight:800;text-align:center}
+.quiz-spelling-box{display:grid;gap:10px}
+.quiz-spelling-input.is-correct{border-color:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.28)}
+.quiz-spelling-input.is-wrong{border-color:#fb7185;box-shadow:0 0 0 3px rgba(251,113,133,.28)}
+.quiz-spelling-input{width:100%;background:#21355f;border:1px solid #35518a;border-radius:16px;color:#eef4ff;padding:14px;font-size:18px;font-weight:800}
 .word-list-panel{display:grid;gap:14px}
 .word-list-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .word-list-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -105,7 +142,7 @@ button,
 .word-list-pos{font-size:13px;font-weight:800;color:#a9b8d8}
 .word-list-meaning{font-size:15px;line-height:1.7;color:#dfe9ff;word-break:break-word}
 .word-list-empty{background:#182a52;border:1px solid #2c4477;border-radius:18px;padding:22px;color:#c4d6ff;line-height:1.8}
-@media (max-width:900px){.study-mode-grid,.word-list-grid{grid-template-columns:1fr}}
+@media (max-width:900px){.study-mode-grid,.word-list-grid,.quiz-control-row,.quiz-choice-grid{grid-template-columns:1fr}}
 
 .modal-overlay{position:fixed;inset:0;background:rgba(5,10,20,.72);display:flex;align-items:center;justify-content:center;padding:18px;z-index:2000}
 .modal-box{width:min(760px,100%);max-height:min(82vh,900px);overflow:auto;background:#12203f;border:1px solid #2c4477;border-radius:22px;box-shadow:0 20px 50px rgba(0,0,0,.35);padding:20px}
@@ -143,7 +180,7 @@ body{
     linear-gradient(180deg,#081018 0%,#0b1117 48%,#0f151c 100%);
   color:var(--text);
 }
-.wrap{max-width:1120px;padding:24px 18px 56px}
+.wrap{max-width:1120px;padding:24px 18px 56px;position:relative}
 .wrap::before{
   content:"後中醫英文單字卡";
   display:block;
@@ -288,10 +325,505 @@ input[type="file"]{
   .seen-action-btn{width:150px;min-width:150px;max-width:150px}
 }
 
+/* Warm mobile visual refresh inspired by the provided reference. Behavior untouched. */
+:root{
+  --bg:#fff4d9;
+  --page:#fff4d9;
+  --card:#fffdf7;
+  --panel:#fffaf0;
+  --panel-soft:#fff0c4;
+  --muted:#9f8a71;
+  --text:#4b3526;
+  --border:#f0d9aa;
+  --primary:#e3ae73;
+  --primary-strong:#d8995a;
+  --primary-soft:#fff0c4;
+  --accent:#73c86b;
+  --accent-soft:#e8f7d9;
+  --danger:#eb7353;
+  --shadow:0 18px 42px rgba(180,126,63,.18);
+  --shadow-soft:0 8px 22px rgba(180,126,63,.14);
+}
+html{background:var(--page);color-scheme:light}
+body{
+  font-family:"Nunito","Avenir Next","Segoe UI","Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;
+  background:
+    radial-gradient(circle at 16% 12%, rgba(255,255,255,.72), transparent 13rem),
+    radial-gradient(circle at 80% 18%, rgba(255,238,190,.8), transparent 16rem),
+    linear-gradient(180deg,#fff6df 0%,#ffefc9 100%);
+  color:var(--text);
+}
+.wrap{max-width:980px;padding:24px 16px 48px;position:relative}
+.wrap::before{
+  color:#4b3526;
+  font-size:clamp(24px,4vw,38px);
+  font-weight:900;
+  text-shadow:none;
+}
+.wrap::after{color:#9f7d57;font-weight:800}
+.panel,
+.card-shell,
+.modal-box{
+  background:rgba(255,253,247,.95);
+  border:1px solid rgba(240,217,170,.85);
+  border-radius:24px;
+  box-shadow:var(--shadow);
+}
+.panel{padding:20px;margin-bottom:18px}
+.panel-head{border-bottom:1px solid #f3dfb6}
+.panel-title,
+.study-title,
+.modal-title,
+.manage-section-title{
+  color:#4b3526;
+  font-weight:900;
+}
+.section-source-note{
+  color:#9f7d57;
+  font-size:13px;
+  font-weight:800;
+  line-height:1.6;
+}
+.section-collapse-btn{
+  background:#e3ae73;
+  color:#fffdf7;
+  border:1px solid #d9a166;
+  border-radius:999px;
+  box-shadow:var(--shadow-soft);
+}
+.study-mode-btn strong{color:#4b3526}
+.quiz-word{color:#4b3526}
+.quiz-prompt-label,
+.quiz-meta,
+.quiz-control-field label{color:#9f7d57}
+.quiz-question-card,
+.quiz-choice-btn{
+  background:#fff8e9;
+  border-color:#f1d9aa;
+  color:#4b3526;
+}
+.quiz-control-field select{
+  background:#fffdf7;
+  color:#4b3526;
+  border-color:#e8c88f;
+}
+.quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled]{
+  background:#fff8e9;
+  border-color:#f1d9aa;
+  color:#4b3526;
+}
+.quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled] .quiz-choice-main{
+  color:#4b3526;
+  opacity:1;
+}
+.quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled] .quiz-choice-sub{
+  color:#8a6d4b;
+  opacity:1;
+}
+.quiz-result{color:#4b3526}
+.quiz-spelling-input{
+  background:#fffdf7;
+  color:#4b3526;
+  border-color:#e8c88f;
+}
+.study-mode-btn span{
+  color:#7a5d42;
+  font-weight:800;
+}
+.study-subtitle,
+.status,
+.deck-meta,
+.footer-note{color:#9f7d57}
+button{
+  border-radius:999px;
+  font-weight:900;
+  letter-spacing:0;
+}
+.btn-secondary,
+.collapse-btn,
+.help-btn{
+  background:#e3ae73;
+  color:#fffdf7;
+  border:1px solid #d9a166;
+  box-shadow:var(--shadow-soft);
+}
+.btn-secondary:hover,
+.collapse-btn:hover,
+.help-btn:hover,
+.study-mode-btn:hover,
+.word-list-item:hover{
+  border-color:#d8995a;
+  transform:translateY(-1px);
+}
+.start-btn{
+  background:linear-gradient(180deg,#eab982,#e2a566);
+  color:#fff;
+  border-radius:999px;
+  box-shadow:0 14px 28px rgba(190,117,48,.28);
+  min-width:220px;
+}
+.start-btn:disabled{background:#ead4ad;color:#a78d68;box-shadow:none}
+.statbox,
+.manage-section,
+.study-mode-btn,
+.word-list-item,
+.word-list-empty,
+.field,
+.quick-block,
+.help-item{
+  background:#fff8e9;
+  border:1px solid #f1d9aa;
+  border-radius:18px;
+  box-shadow:0 8px 18px rgba(180,126,63,.08);
+}
+.statbox .label,
+.field .label,
+.quick-label,
+.study-deck-picker-label,
+.word-list-pos{
+  color:#a88962;
+  font-weight:900;
+}
+.statbox .value{color:#4b3526}
+.progressbar{background:#f0dfbf}
+.progressbar>div{background:linear-gradient(90deg,#78c96d,#f2bf55)}
+.deck-grid input,
+.deck-grid select,
+.study-deck-picker select,
+input[type="file"]{
+  background:#fffdf7;
+  color:#4b3526;
+  border:1px solid #e8c88f;
+  border-radius:16px;
+  min-height:46px;
+}
+.deck-grid input:focus,
+.deck-grid select:focus,
+.study-deck-picker select:focus{
+  outline:3px solid rgba(227,174,115,.25);
+  border-color:#d8995a;
+}
+.card-shell{padding:14px}
+.card{
+  min-height:660px;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255,236,177,.85), transparent 17rem),
+    linear-gradient(180deg,#fff7de 0%,#ffefbd 100%);
+  border:1px solid #f2d697;
+  border-radius:24px;
+  box-shadow:var(--shadow);
+}
+.card-progress-text{color:#7d6043}
+.word,
+.back-word{
+  color:#4b3526;
+  font-family:"Nunito","Avenir Next","Segoe UI","Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;
+  font-weight:900;
+  text-shadow:none;
+}
+.front-phonetic,
+.hint{color:#9b7a55}
+.speak{
+  color:#e3ae73;
+  text-shadow:none;
+  filter:drop-shadow(0 5px 8px rgba(180,126,63,.16));
+}
+.difficult-toggle{
+  background:#fffdf7;
+  color:#e16d4d;
+  border:1px solid #edc49b;
+  border-radius:999px;
+  box-shadow:var(--shadow-soft);
+}
+.difficult-toggle.is-on{
+  background:#eb7353;
+  border-color:#eb7353;
+  color:#fff;
+}
+.seen-action-btn{
+  background:#73c86b;
+  color:#fff;
+  border-radius:999px;
+  box-shadow:0 12px 22px rgba(83,160,74,.24);
+}
+.nav-btn{
+  background:#fffdf7;
+  border:1px solid #e8c88f;
+  color:#d8995a;
+  box-shadow:var(--shadow-soft);
+}
+.quick-value,
+.field .value,
+.word-list-meaning{color:#5b4432}
+.back-header{
+  background:#fff6df;
+  border-bottom:1px solid #f2d697;
+}
+.word-list-word{color:#4b3526}
+.word-list-item.is-difficult{
+  border-color:#e3ae73;
+  box-shadow:0 0 0 2px rgba(227,174,115,.18) inset;
+}
+.pending-deck-box{
+  display:grid;
+  gap:10px;
+  margin-top:14px;
+  padding:14px;
+  background:#fff4d2;
+  border:1px solid #f0d19a;
+  border-radius:18px;
+}
+.pending-deck-title{
+  color:#4b3526;
+  font-size:15px;
+  font-weight:900;
+}
+.pending-deck-row{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:10px;
+}
+.pending-deck-row select{
+  width:100%;
+  background:#fffdf7;
+  color:#4b3526;
+  border:1px solid #e8c88f;
+  border-radius:16px;
+  min-height:46px;
+  padding:12px 14px;
+  font-size:14px;
+}
+.pending-deck-meta{
+  color:#9f7d57;
+  font-size:14px;
+  line-height:1.6;
+}
+.modal-overlay{
+  background:rgba(76,54,38,.35);
+  backdrop-filter:blur(4px);
+}
+.theme-toggle{
+  position:absolute;
+  top:14px;
+  right:16px;
+  z-index:20;
+  padding:10px 14px;
+  background:#fffdf7;
+  color:#7a5d42;
+  border:1px solid #e8c88f;
+  border-radius:999px;
+  box-shadow:var(--shadow-soft);
+  font-size:13px;
+  will-change:auto;
+}
+.theme-toggle:hover{border-color:#d8995a}
+body.theme-dark{
+  background:
+    radial-gradient(circle at top left, rgba(61,214,198,.18), transparent 28rem),
+    radial-gradient(circle at bottom right, rgba(244,179,95,.10), transparent 24rem),
+    linear-gradient(180deg,#081018 0%,#0b1117 48%,#0f151c 100%);
+  color:#ecf3f7;
+}
+body.theme-dark .wrap::before,
+body.theme-dark .panel-title,
+body.theme-dark .study-title,
+body.theme-dark .modal-title,
+body.theme-dark .manage-section-title,
+body.theme-dark .study-mode-btn strong,
+body.theme-dark .word,
+body.theme-dark .back-word,
+body.theme-dark .quiz-word,
+body.theme-dark .word-list-word,
+body.theme-dark .statbox .value{
+  color:#f4fbff;
+}
+body.theme-dark .wrap::after,
+body.theme-dark .study-subtitle,
+body.theme-dark .status,
+body.theme-dark .deck-meta,
+body.theme-dark .footer-note,
+body.theme-dark .section-source-note,
+body.theme-dark .quiz-prompt-label,
+body.theme-dark .quiz-meta,
+body.theme-dark .front-phonetic,
+body.theme-dark .hint{
+  color:#a4b4c0;
+}
+body.theme-dark .panel,
+body.theme-dark .card-shell,
+body.theme-dark .modal-box{
+  background:rgba(18,27,37,.94);
+  border-color:rgba(45,63,80,.95);
+  box-shadow:0 18px 45px rgba(0,0,0,.35);
+}
+body.theme-dark .panel-head,
+body.theme-dark .back-header{
+  border-color:#263747;
+}
+body.theme-dark .statbox,
+body.theme-dark .manage-section,
+body.theme-dark .pending-deck-box,
+body.theme-dark .study-mode-btn,
+body.theme-dark .word-list-item,
+body.theme-dark .word-list-empty,
+body.theme-dark .field,
+body.theme-dark .quick-block,
+body.theme-dark .quiz-question-card,
+body.theme-dark .quiz-choice-btn,
+body.theme-dark .help-item{
+  background:rgba(23,35,49,.96);
+  border-color:#263747;
+  box-shadow:0 8px 22px rgba(0,0,0,.25);
+}
+body.theme-dark .quiz-question-card{
+  background:#111c28;
+  border-color:#3a5368;
+}
+body.theme-dark .quiz-word{
+  color:#ffffff;
+  text-shadow:0 2px 12px rgba(0,0,0,.35);
+}
+body.theme-dark .quiz-choice-btn,
+body.theme-dark .quiz-control-field select{
+  background:#18283a;
+  border-color:#446179;
+  color:#f5fbff;
+}
+body.theme-dark .quiz-choice-btn{
+  font-weight:900;
+}
+body.theme-dark .quiz-choice-btn.is-correct{
+  background:#16a34a;
+  border:2px solid #86efac;
+  color:#ffffff;
+  box-shadow:none;
+}
+body.theme-dark .quiz-choice-btn.is-wrong{
+  background:#dc2626;
+  border:2px solid #fda4af;
+  color:#ffffff;
+  box-shadow:none;
+}
+body.theme-dark .quiz-choice-btn.is-correct .quiz-choice-main,
+body.theme-dark .quiz-choice-btn.is-correct .quiz-choice-sub,
+body.theme-dark .quiz-choice-btn.is-wrong .quiz-choice-main,
+body.theme-dark .quiz-choice-btn.is-wrong .quiz-choice-sub{
+  color:#ffffff;
+  opacity:1;
+  text-shadow:0 1px 2px rgba(0,0,0,.4);
+}
+body.theme-dark .quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled]{
+  background:#162536;
+  border-color:#38546b;
+  color:#d8e7f0;
+}
+body.theme-dark .quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled] .quiz-choice-main{
+  color:#edf7ff;
+  opacity:1;
+}
+body.theme-dark .quiz-choice-btn:not(.is-correct):not(.is-wrong)[disabled] .quiz-choice-sub{
+  color:#bfd1df;
+  opacity:1;
+}
+body.theme-dark .quiz-result{
+  color:#f5fbff;
+}
+body.theme-dark .statbox .label,
+body.theme-dark .field .label,
+body.theme-dark .quick-label,
+body.theme-dark .study-deck-picker-label,
+body.theme-dark .word-list-pos,
+body.theme-dark .study-mode-btn span{
+  color:#99aabb;
+}
+body.theme-dark .quick-value,
+body.theme-dark .field .value,
+body.theme-dark .word-list-meaning{
+  color:#e9f2f7;
+}
+body.theme-dark .deck-grid input,
+body.theme-dark .deck-grid select,
+body.theme-dark .pending-deck-row select,
+body.theme-dark .study-deck-picker select,
+body.theme-dark .quiz-control-field select,
+body.theme-dark .quiz-spelling-input,
+body.theme-dark input[type="file"],
+body.theme-dark .nav-btn,
+body.theme-dark .theme-toggle,
+body.theme-dark .difficult-toggle{
+  background:#0f1822;
+  color:#edf6fa;
+  border-color:#304558;
+}
+body.theme-dark .quiz-spelling-input{
+  background:#0b121b;
+  border-color:#4f708a;
+  color:#ffffff;
+}
+body.theme-dark .quiz-spelling-input::placeholder{
+  color:#b7c9d6;
+}
+body.theme-dark .btn-secondary,
+body.theme-dark .collapse-btn,
+body.theme-dark .help-btn,
+body.theme-dark .section-collapse-btn,
+body.theme-dark .start-btn{
+  background:#1b2a38;
+  color:#edf6fa;
+  border-color:#304558;
+}
+body.theme-dark .start-btn{
+  background:linear-gradient(135deg,#2fd5c5,#60e6d7);
+  color:#051317;
+  border-color:#2fd5c5;
+}
+body.theme-dark .card{
+  background:
+    radial-gradient(circle at top, rgba(61,214,198,.08), transparent 24rem),
+    linear-gradient(180deg,#111b25 0%,#0f1720 100%);
+  border-color:#263747;
+}
+body.theme-dark .progressbar{background:#243442}
+body.theme-dark .progressbar>div{background:linear-gradient(90deg,#2fd5c5,#f4b35f)}
+body.theme-dark .speak,
+body.theme-dark .nav-btn{color:#eef7fb}
+body.theme-dark .seen-action-btn{
+  background:#3dd6c6;
+  color:#061416;
+}
+body.theme-dark .difficult-toggle{
+  background:#3c2c17;
+  color:#ffd493;
+  border-color:#755728;
+}
+body.theme-dark .difficult-toggle.is-on{
+  background:#e05e5e;
+  border-color:#e05e5e;
+  color:#fff;
+}
+body.theme-dark .word-list-item.is-difficult{
+  border-color:#d99a6b;
+  box-shadow:0 0 0 2px rgba(194,124,44,.12) inset;
+}
+body.theme-dark .modal-overlay{background:rgba(3,8,12,.72)}
+body.theme-dark .pending-deck-title{color:#fff4df}
+body.theme-dark .pending-deck-meta{color:#a4b4c0}
+@media (max-width:700px){
+  .wrap{padding:18px 10px 36px}
+  .panel{padding:14px;border-radius:22px}
+  .row{grid-template-columns:1fr 1fr}
+  .row .btn-secondary{padding:11px 10px;font-size:13px}
+  .card{min-height:660px;border-radius:22px}
+  .word{font-size:clamp(40px,13vw,72px)}
+  .theme-toggle{top:10px;right:10px;padding:9px 12px}
+  .pending-deck-row{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
 <div class="wrap">
+  <button id="themeToggleBtn" class="theme-toggle" type="button" aria-pressed="false">深色</button>
   <div id="homeScreen">
     <div class="panel">
       <div class="panel-head">
@@ -354,6 +886,17 @@ input[type="file"]{
             <button id="syncDeckBtn" class="btn-secondary">重新同步</button>
           </div>
           <div id="deckMetaText" class="deck-meta">尚未建立題庫。可貼上 CSV / Google Sheets 網址並新增題庫。</div>
+          <div class="pending-deck-box">
+            <div class="pending-deck-title">未入庫題庫</div>
+            <div class="pending-deck-row">
+              <select id="pendingDeckSelect">
+                <option value="">讀取 GitHub 題庫清單中...</option>
+              </select>
+              <button id="importPendingDeckBtn" class="btn-secondary" type="button">加入目前題庫</button>
+              <button id="refreshPendingDecksBtn" class="btn-secondary" type="button">重新整理</button>
+            </div>
+            <div id="pendingDeckMetaText" class="pending-deck-meta">會讀取 data/decks.json；已加入的題庫不會重複顯示。</div>
+          </div>
         </div>
 
         <div class="manage-section cloud-sync-section">
@@ -382,19 +925,72 @@ input[type="file"]{
 
     <div id="studyModeView" class="panel study-entry-panel screen-hidden">
       <div class="panel-title">請選擇學習模式</div>
-      <div class="study-mode-grid">
-        <button id="memorizeModeBtn" class="study-mode-btn" type="button">
-          <strong>背誦單字卡</strong>
-          <span>沿用目前的背誦流程，依新字池與已學單字的規則抽題複習。</span>
-        </button>
-        <button id="deckWordModeBtn" class="study-mode-btn" type="button">
-          <strong>題庫單字卡</strong>
-          <span>先列出全部單字、詞性、定義；點選任一單字後進入三層單字卡。</span>
-        </button>
-        <button id="difficultWordModeBtn" class="study-mode-btn" type="button">
-          <strong>困難單字卡</strong>
-          <span>只列出有標記困難的單字；點入後可逐張查看與調整困難標記。</span>
-        </button>
+      <div class="study-mode-section">
+        <div class="study-mode-section-title">學習模式</div>
+        <div class="study-mode-grid">
+          <button id="memorizeModeBtn" class="study-mode-btn" type="button">
+            <strong>背誦單字卡</strong>
+            <span>沿用目前的背誦流程，依新字池與已學單字的規則抽題複習。</span>
+          </button>
+          <button id="deckWordModeBtn" class="study-mode-btn" type="button">
+            <strong>題庫單字卡</strong>
+            <span>先列出全部單字、詞性、定義；點選任一單字後進入三層單字卡。</span>
+          </button>
+          <button id="difficultWordModeBtn" class="study-mode-btn" type="button">
+            <strong>困難單字卡</strong>
+            <span>只列出有標記困難的單字；點入後可逐張查看與調整困難標記。</span>
+          </button>
+        </div>
+      </div>
+      <div class="study-mode-section">
+        <div class="study-mode-section-title">測驗模式</div>
+        <div class="study-mode-grid quiz-mode-grid">
+          <button id="quizModeBtn" class="study-mode-btn" type="button">
+            <strong>單字測驗</strong>
+            <span>以答題方式檢查單字記憶，可選擇今日新字、困難字、已學單字或全部題庫。</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="quizView" class="panel quiz-panel screen-hidden">
+      <div class="word-list-head">
+        <div class="panel-title">單字測驗</div>
+        <button id="backToStudyModesFromQuizBtn" class="btn-secondary" type="button">返回模式選擇</button>
+      </div>
+      <div class="quiz-control-row">
+        <div class="quiz-control-field">
+          <label for="quizScopeSelect">測驗範圍</label>
+          <select id="quizScopeSelect">
+            <option value="today">今日新字</option>
+            <option value="difficult">困難字</option>
+            <option value="learned">已學單字</option>
+            <option value="all">全部題庫</option>
+          </select>
+        </div>
+        <div class="quiz-control-field">
+          <label for="quizTypeSelect">題型</label>
+          <select id="quizTypeSelect">
+            <option value="en_to_zh">英文選中文</option>
+            <option value="zh_to_en">中文選英文</option>
+            <option value="spelling">拼字</option>
+          </select>
+        </div>
+      </div>
+      <div class="quiz-question-card">
+        <div class="quiz-meta" id="quizMetaText">請選擇測驗範圍開始。</div>
+        <div class="quiz-prompt-label" id="quizPromptLabel">題目</div>
+        <div class="quiz-word" id="quizWordText">單字測驗</div>
+        <div class="quiz-choice-grid" id="quizChoiceGrid"></div>
+        <div class="quiz-spelling-box screen-hidden" id="quizSpellingBox">
+          <input id="quizSpellingInput" class="quiz-spelling-input" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="輸入英文單字或片語" />
+          <button id="submitQuizSpellingBtn" class="btn-secondary" type="button">送出拼字</button>
+        </div>
+        <div class="quiz-result" id="quizResultText"></div>
+        <div class="quiz-actions">
+          <button id="restartQuizBtn" class="btn-secondary" type="button">重新出題</button>
+          <button id="nextQuizBtn" class="btn-secondary" type="button">下一題</button>
+        </div>
       </div>
     </div>
 
@@ -521,6 +1117,9 @@ const APP_DECKS_INDEX_KEY='flashcard_decks_index_v1';
 const APP_DECKS_META_KEY='flashcard_decks_meta_v1';
 const ACTIVE_DECK_ID_KEY='flashcard_active_deck_id_v1';
 const CLOUD_SYNC_CONFIG_KEY='flashcard_cloud_sync_config_v1';
+const THEME_PREF_KEY='flashcard_theme_pref_v1';
+const APP_PUBLIC_BASE_URL='https://ajlee94.github.io/houzhongyi-english-vocab/';
+const APP_DECK_MANIFEST_URL='data/decks.json';
 const CLOUD_SYNC_DISABLED=false;
 const BUILT_IN_DECKS=[
   {id:'builtin_cmu_114', name:'中國醫 114 英文單字庫', url:'data/114_cmu_english_vocab.csv', normalizedUrl:'data/114_cmu_english_vocab.csv', cloudDeckKey:'data/114_cmu_english_vocab.csv', type:'csv', createdAt:'2026-05-06T00:00:00.000Z', updatedAt:'2026-05-06T00:00:00.000Z', lastSyncedAt:'', totalWords:381, totalGroups:0, builtIn:true}
@@ -540,10 +1139,12 @@ const el=id=>document.getElementById(id);
 const addDailyLimitBtn=el('addDailyLimitBtn'), resetBtn=el('resetBtn'), clearBtn=el('clearBtn');
 const exportProgressBtn=el('exportProgressBtn'), importProgressBtn=el('importProgressBtn'), progressFile=el('progressFile');
 const deckSelect=el('deckSelect'), learningDeckSelect=el('learningDeckSelect'), deckNameInput=el('deckNameInput'), deckUrlInput=el('deckUrlInput'), addDeckBtn=el('addDeckBtn'), saveDeckBtn=el('saveDeckBtn'), deleteDeckBtn=el('deleteDeckBtn'), loadDeckBtn=el('loadDeckBtn'), syncDeckBtn=el('syncDeckBtn'), deckMetaText=el('deckMetaText');
+const pendingDeckSelect=el('pendingDeckSelect'), importPendingDeckBtn=el('importPendingDeckBtn'), refreshPendingDecksBtn=el('refreshPendingDecksBtn'), pendingDeckMetaText=el('pendingDeckMetaText');
 const cloudScriptUrlInput=el('cloudScriptUrlInput'), cloudUserKeyInput=el('cloudUserKeyInput'), saveCloudConfigBtn=el('saveCloudConfigBtn'), pushCloudBtn=el('pushCloudBtn'), pullCloudBtn=el('pullCloudBtn'), cloudMetaText=el('cloudMetaText'), cloudSyncFrame=el('cloudSyncFrame');
 const homeScreen=el('homeScreen'), studyScreen=el('studyScreen'), enterStudyBtn=el('enterStudyBtn'), backHomeBtn=el('backHomeBtn'), studyDeckTitle=el('studyDeckTitle'), studySubtitle=el('studySubtitle');
 const helpBtn=el('helpBtn'), helpModal=el('helpModal'), closeHelpBtn=el('closeHelpBtn');
 const managerCollapseBtn=el('managerCollapseBtn'), managerPanelBody=el('managerPanelBody');
+const themeToggleBtn=el('themeToggleBtn');
 const seenBtns=()=>document.querySelectorAll('.seen-action-btn');
 const difficultBtns=()=>document.querySelectorAll('.difficult-btn');
 const statusText=el('statusText'), dailyText=el('dailyText'), dailyFill=el('dailyFill'), totalLearnedText=el('totalLearnedText');
@@ -557,7 +1158,8 @@ const speakWordBtn=el('speakWordBtn'), speakQuickWordBtn=el('speakQuickWordBtn')
 const posText=el('posText'), meaningText=el('meaningText'), usageText=el('usageText'), wordFormText=el('wordFormText'), tenseText=el('tenseText'), vingText=el('vingText'), collocationText=el('collocationText'), relatedText=el('relatedText'), synonymsText=el('synonymsText'), antonymsText=el('antonymsText'), exampleText=el('exampleText');
 const cardProgressText=el('cardProgressText');
 const studyModeView=el('studyModeView'), wordListView=el('wordListView'), cardView=el('cardView');
-const memorizeModeBtn=el('memorizeModeBtn'), deckWordModeBtn=el('deckWordModeBtn'), difficultWordModeBtn=el('difficultWordModeBtn'), backToStudyModesBtn=el('backToStudyModesBtn');
+const memorizeModeBtn=el('memorizeModeBtn'), deckWordModeBtn=el('deckWordModeBtn'), difficultWordModeBtn=el('difficultWordModeBtn'), quizModeBtn=el('quizModeBtn'), backToStudyModesBtn=el('backToStudyModesBtn'), backToStudyModesFromQuizBtn=el('backToStudyModesFromQuizBtn');
+const quizView=el('quizView'), quizScopeSelect=el('quizScopeSelect'), quizTypeSelect=el('quizTypeSelect'), quizMetaText=el('quizMetaText'), quizPromptLabel=el('quizPromptLabel'), quizWordText=el('quizWordText'), quizChoiceGrid=el('quizChoiceGrid'), quizSpellingBox=el('quizSpellingBox'), quizSpellingInput=el('quizSpellingInput'), submitQuizSpellingBtn=el('submitQuizSpellingBtn'), quizResultText=el('quizResultText'), restartQuizBtn=el('restartQuizBtn'), nextQuizBtn=el('nextQuizBtn');
 const wordListTitle=el('wordListTitle'), wordListContainer=el('wordListContainer'), wordListEmpty=el('wordListEmpty'), cardFooterNote=el('cardFooterNote');
 const backScroll=document.querySelector('.back-scroll');
 
@@ -572,9 +1174,11 @@ let cloudDeckIndexSyncQueued=false;
 
 let words=[], groups=[], currentCard=null, history=[], historyIndex=-1, cardStage=1;
 let studySessionType='memorize';
+let quizScope='today', quizType='en_to_zh', quizItems=[], quizChoices=[], quizCurrent=null, quizAnswered=false, quizScore=0, quizTotal=0;
 let activeBrowseItems=[];
 let activeBrowseIndex=-1;
 let decks=[];
+let pendingDecks=[];
 let deckRegistryMeta=defaultDeckRegistryMeta();
 let currentDeckId='';
 let currentDeckMeta=null;
@@ -861,6 +1465,112 @@ function ensureBuiltInDecks({markUpdated=false, autoPush=false}={}){
   });
   if(changed) persistDeckRegistryLocal({markUpdated, autoPush});
   return changed;
+}
+function makeDeckIdFromUrl(url){
+  const slug=String(url||'').replace(/^https?:\/\//,'').replace(/[^a-z0-9]+/gi,'_').replace(/^_+|_+$/g,'').slice(0,72);
+  return `github_${slug || Date.now()}`;
+}
+function inferDeckNameFromUrl(url){
+  const filename=String(url||'').split(/[?#]/)[0].split('/').pop() || '';
+  const lower=filename.toLowerCase();
+  const yearMatch=lower.match(/(?:^|_)(10[6-9]|11[0-9])(?:_|$)/);
+  const year=yearMatch ? yearMatch[1] : '';
+  const schoolMap=[
+    {keys:['cmu','china_medical','china-medical','中國醫'], label:'中國醫'},
+    {keys:['isu','i_shou','i-shou','義守'], label:'義守'},
+    {keys:['tcu','tzuchi','tzu_chi','tzu-chi','慈濟'], label:'慈濟'}
+  ];
+  const school=schoolMap.find(item=>item.keys.some(key=>lower.includes(String(key).toLowerCase())))?.label || '';
+  if(school && year) return `${school} ${year} 英文單字庫`;
+  if(year) return `${year} 英文單字庫`;
+  if(school) return `${school} 英文單字庫`;
+  return filename.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ').trim();
+}
+function normalizeManifestDeck(entry){
+  if(!entry || typeof entry!=='object') return null;
+  const url=String(entry.url||entry.path||'').trim();
+  if(!url) return null;
+  const normalizedUrl=normalizeDeckUrl(url);
+  const inferredName=inferDeckNameFromUrl(normalizedUrl);
+  return normalizeDeckMeta({
+    id:String(entry.id||'').trim() || makeDeckIdFromUrl(normalizedUrl),
+    name:String(entry.name||entry.title||inferredName||normalizedUrl).trim(),
+    url:normalizedUrl,
+    normalizedUrl,
+    cloudDeckKey:String(entry.cloudDeckKey||normalizedUrl).trim(),
+    type:isGoogleSheetUrl(normalizedUrl)?'google_sheet':'csv',
+    createdAt:String(entry.createdAt||'').trim() || new Date().toISOString(),
+    updatedAt:String(entry.updatedAt||'').trim() || new Date().toISOString(),
+    lastSyncedAt:'',
+    totalWords:Number(entry.totalWords)||0,
+    totalGroups:Number(entry.totalGroups)||0
+  });
+}
+function isDeckAlreadyRegistered(candidate){
+  if(!candidate) return true;
+  const keys=[candidate.id,candidate.cloudDeckKey,candidate.normalizedUrl,candidate.url].map(v=>String(v||'').trim()).filter(Boolean);
+  return decks.some(deck=>{
+    const existing=[deck.id,deck.cloudDeckKey,deck.normalizedUrl,deck.url].map(v=>String(v||'').trim()).filter(Boolean);
+    return keys.some(key=>existing.includes(key));
+  });
+}
+function renderPendingDeckSelect(){
+  if(!pendingDeckSelect || !pendingDeckMetaText) return;
+  const available=pendingDecks.filter(deck=>!isDeckAlreadyRegistered(deck));
+  pendingDeckSelect.innerHTML='';
+  if(!available.length){
+    pendingDeckSelect.innerHTML='<option value="">目前沒有未入庫題庫</option>';
+    pendingDeckSelect.disabled=true;
+    if(importPendingDeckBtn) importPendingDeckBtn.disabled=true;
+    pendingDeckMetaText.textContent='GitHub 題庫清單已讀取；所有清單內題庫都已在目前題庫清單中。';
+    return;
+  }
+  available.forEach((deck,index)=>{
+    const option=document.createElement('option');
+    option.value=String(index);
+    option.textContent=deck.name;
+    pendingDeckSelect.appendChild(option);
+  });
+  pendingDeckSelect.disabled=false;
+  if(importPendingDeckBtn) importPendingDeckBtn.disabled=false;
+  pendingDeckMetaText.textContent=`可加入 ${available.length} 份 GitHub CSV 題庫。`;
+}
+async function refreshPendingDecks({silent=false}={}){
+  if(!pendingDeckSelect || !pendingDeckMetaText) return;
+  if(!silent) pendingDeckMetaText.textContent='正在讀取 GitHub 題庫清單...';
+  try{
+    const manifestUrl=resolveDeckFetchUrl(APP_DECK_MANIFEST_URL);
+    const res=await fetch(manifestUrl,{cache:'no-store'});
+    if(!res.ok) throw new Error(`讀取失敗（${res.status}）`);
+    const manifest=await res.json();
+    const sourceDecks=Array.isArray(manifest) ? manifest : (Array.isArray(manifest?.decks) ? manifest.decks : []);
+    pendingDecks=sourceDecks.map(normalizeManifestDeck).filter(Boolean);
+    renderPendingDeckSelect();
+  }catch(err){
+    pendingDecks=BUILT_IN_DECKS.map(normalizeManifestDeck).filter(Boolean);
+    renderPendingDeckSelect();
+    if(pendingDeckMetaText) pendingDeckMetaText.textContent='GitHub 題庫清單尚未部署；目前先用內建題庫清單檢查。';
+  }
+}
+async function importPendingDeck(){
+  const available=pendingDecks.filter(deck=>!isDeckAlreadyRegistered(deck));
+  const selected=available[Number(pendingDeckSelect?.value || 0)];
+  if(!selected){ alert('目前沒有可加入的未入庫題庫。'); return; }
+  const duplicate=decks.find(deck=>deck.cloudDeckKey===selected.cloudDeckKey || deck.normalizedUrl===selected.normalizedUrl || deck.url===selected.url);
+  if(duplicate){
+    setCurrentDeck(duplicate);
+    renderPendingDeckSelect();
+    return;
+  }
+  const deck=normalizeDeckMeta({...selected, id:selected.id || newDeckId()});
+  decks.push(deck);
+  saveDecks({markUpdated:true, autoPush:true});
+  setCurrentDeck(deck);
+  renderDeckSelect();
+  renderPendingDeckSelect();
+  statusText.textContent=`已加入題庫：${deck.name}，正在載入 CSV...`;
+  await loadDeckById(deck.id,{forceSync:true});
+  renderPendingDeckSelect();
 }
 function getCloudDeckKey(){
   if(!currentDeckMeta) return '';
@@ -1498,7 +2208,7 @@ function getLearningDateKey(now=new Date()){ const d=new Date(now); const parts=
 function setManagerPanelCollapsed(collapsed){ if(!managerPanelBody || !managerCollapseBtn) return; managerPanelBody.classList.toggle('hidden', !!collapsed); managerCollapseBtn.textContent = collapsed ? '展開' : '收合'; managerCollapseBtn.setAttribute('aria-expanded', String(!collapsed)); }
 function getDailyLimitValue(value=state.dailyLimit){ const num=Number(value); return Number.isFinite(num) ? Math.max(0, Math.min(MAX_DAILY_NEW_LIMIT, num)) : DEFAULT_DAILY_NEW_LIMIT; }
 function roundUpToDailyStep(value){ const num=Number(value); if(!Number.isFinite(num) || num<=0) return 0; return Math.min(MAX_DAILY_NEW_LIMIT, Math.max(0, Math.floor(num))); }
-function saveDecks({markUpdated=true, autoPush=true}={}){ persistDeckRegistryLocal({markUpdated, autoPush}); }
+function saveDecks({markUpdated=true, autoPush=true}={}){ persistDeckRegistryLocal({markUpdated, autoPush}); renderPendingDeckSelect(); }
 function loadDecks(){ try{ const raw=localStorage.getItem(APP_DECKS_INDEX_KEY); decks = raw ? JSON.parse(raw) : []; if(!Array.isArray(decks)) decks=[]; decks=decks.map(normalizeDeckMeta).filter(Boolean); deckRegistryMeta=loadDeckRegistryMeta(); if(!deckRegistryMeta?.updatedAt && decks.length){ deckRegistryMeta.updatedAt=new Date().toISOString(); } persistDeckRegistryLocal({markUpdated:false, autoPush:false}); ensureBuiltInDecks({markUpdated:!raw, autoPush:false}); }catch(e){ decks=[]; deckRegistryMeta=loadDeckRegistryMeta(); ensureBuiltInDecks({markUpdated:true, autoPush:false}); } }
 function updateStudyDeckTitle(){ studyDeckTitle.textContent=`目前題庫：${currentDeckMeta?.name || '—'}`; }
 function isBrowseMode(){ return studySessionType==='browse_all' || studySessionType==='browse_difficult'; }
@@ -1509,6 +2219,7 @@ function updateStudySubtitleText(view='mode'){
   if(view==='mode') studySubtitle.textContent='請先選擇這次要使用的學習模式';
   else if(view==='list') studySubtitle.textContent=`目前模式：${getBrowseModeLabel()}。點選任一單字後，可進入三層單字卡。`;
   else if(view==='card' && isBrowseMode()) studySubtitle.textContent=`目前模式：${getBrowseModeLabel()}。在第 3 層再點一次，會回到單字總覽。`;
+  else if(view==='quiz') studySubtitle.textContent='測驗只會在你主動點選單字測驗時開始，不會由背誦流程自動觸發。';
   else studySubtitle.textContent='返回首頁可切換題庫、同步題庫與調整學習進度';
 }
 function updateCardFooterNote(){
@@ -1519,6 +2230,7 @@ function updateCardFooterNote(){
 }
 function showStudyModeSelection(){
   studyModeView.classList.remove('screen-hidden');
+  quizView.classList.add('screen-hidden');
   wordListView.classList.add('screen-hidden');
   cardView.classList.add('screen-hidden');
   updateStudySubtitleText('mode');
@@ -1548,6 +2260,7 @@ function renderWordList(){
 function showWordListView(mode=studySessionType){
   studySessionType=mode;
   studyModeView.classList.add('screen-hidden');
+  quizView.classList.add('screen-hidden');
   wordListView.classList.remove('screen-hidden');
   cardView.classList.add('screen-hidden');
   renderWordList();
@@ -1555,6 +2268,7 @@ function showWordListView(mode=studySessionType){
 }
 function showCardView(){
   studyModeView.classList.add('screen-hidden');
+  quizView.classList.add('screen-hidden');
   wordListView.classList.add('screen-hidden');
   cardView.classList.remove('screen-hidden');
   updateCardFooterNote();
@@ -1577,6 +2291,169 @@ function openBrowseMode(mode){
   activeBrowseItems=getBrowseItemsForMode(mode);
   activeBrowseIndex=-1;
   showWordListView(mode);
+}
+function shuffleList(list){
+  const copy=[...list];
+  for(let i=copy.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [copy[i],copy[j]]=[copy[j],copy[i]];
+  }
+  return copy;
+}
+function getQuizPool(scope=quizScope){
+  if(scope==='today'){
+    const ids=new Set([...(state.dailyNewIds||[]), ...(state.dailyAddedIds||[])]);
+    return words.filter(item=>ids.has(item.id));
+  }
+  if(scope==='difficult') return words.filter(item=>isDifficultItem(item));
+  if(scope==='learned') return words.filter(item=>(state.counts[item.id]||0)>0);
+  return [...words];
+}
+function getQuizScopeLabel(scope=quizScope){
+  if(scope==='today') return '今日新字';
+  if(scope==='difficult') return '困難字';
+  if(scope==='learned') return '已學單字';
+  return '全部題庫';
+}
+function getQuizTypeLabel(type=quizType){
+  if(type==='zh_to_en') return '中文選英文';
+  if(type==='spelling') return '拼字';
+  return '英文選中文';
+}
+function getQuizWord(item){
+  return getFieldByAliases(item,['單字','word','Word']) || '—';
+}
+function getQuizMeaning(item){
+  return getFieldByAliases(item,['定義','meaning','definition']) || '—';
+}
+function normalizeQuizAnswer(value){
+  return String(value||'').trim().toLowerCase().replace(/\s+/g,' ');
+}
+function getSpellingHint(value){
+  return String(value||'').trim().split(/\s+/).map(part=>{
+    return part.replace(/[A-Za-z]+/g, token=>{
+      if(token.length<=1) return token;
+      return token[0] + '_'.repeat(Math.max(1, token.length-1));
+    });
+  }).join(' ');
+}
+function buildQuizChoices(answer,type=quizType){
+  const answerText=type==='zh_to_en' ? getQuizWord(answer) : getQuizMeaning(answer);
+  const seen=new Set([answerText]);
+  const distractors=[];
+  for(const item of shuffleList(words.filter(item=>item && item.id!==answer.id))){
+    const text=type==='zh_to_en' ? getQuizWord(item) : getQuizMeaning(item);
+    if(!text || seen.has(text)) continue;
+    seen.add(text);
+    distractors.push({item, text, isAnswer:false});
+    if(distractors.length>=3) break;
+  }
+  return shuffleList([{item:answer, text:answerText, isAnswer:true}, ...distractors]);
+}
+function renderQuizChoice(choice,index,{answered=false}={}){
+  const text=choice?.text || '—';
+  if(!answered) return `<button class="quiz-choice-btn" type="button" data-quiz-choice="${index}">${escapeHtml(text)}</button>`;
+  const word=getQuizWord(choice.item);
+  const meaning=getQuizMeaning(choice.item);
+  const main=quizType==='zh_to_en' ? word : meaning;
+  const sub=quizType==='zh_to_en' ? meaning : word;
+  return `<button class="quiz-choice-btn${choice.isAnswer ? ' is-correct' : ''}" type="button" data-quiz-choice="${index}" disabled>
+    <span class="quiz-choice-main">${escapeHtml(main)}</span>
+    <span class="quiz-choice-sub">${escapeHtml(sub)}</span>
+  </button>`;
+}
+function resetQuizQuestion(){
+  quizAnswered=false;
+  quizResultText.textContent='';
+  quizChoiceGrid.innerHTML='';
+  quizSpellingInput.value='';
+  quizSpellingInput.disabled=false;
+  quizSpellingInput.classList.remove('is-correct','is-wrong');
+  submitQuizSpellingBtn.disabled=false;
+  quizSpellingBox.classList.add('screen-hidden');
+  quizChoiceGrid.classList.remove('screen-hidden');
+  if(!quizItems.length){
+    quizCurrent=null;
+    quizWordText.textContent=getQuizScopeLabel();
+    quizMetaText.textContent=`${getQuizScopeLabel()}目前沒有可測驗的單字。`;
+    quizPromptLabel.textContent='題目';
+    nextQuizBtn.disabled=true;
+    return;
+  }
+  nextQuizBtn.disabled=false;
+  quizCurrent=quizItems.shift();
+  const word=getQuizWord(quizCurrent);
+  const meaning=getQuizMeaning(quizCurrent);
+  quizMetaText.textContent=`${getQuizScopeLabel()}｜${getQuizTypeLabel()}｜已答 ${quizTotal} 題｜答對 ${quizScore} 題`;
+  if(quizType==='zh_to_en'){
+    quizPromptLabel.textContent='題目中文，選項英文';
+    quizWordText.textContent=meaning;
+    quizChoices=buildQuizChoices(quizCurrent,'zh_to_en');
+    quizChoiceGrid.innerHTML=quizChoices.map((choice,index)=>renderQuizChoice(choice,index)).join('');
+    return;
+  }
+  if(quizType==='spelling'){
+    quizPromptLabel.textContent='看中文拼英文';
+    quizWordText.textContent=`${meaning}\n${getSpellingHint(word)}`;
+    quizChoiceGrid.classList.add('screen-hidden');
+    quizSpellingBox.classList.remove('screen-hidden');
+    window.setTimeout(()=>quizSpellingInput.focus(), 0);
+    return;
+  }
+  quizPromptLabel.textContent='題目英文，選項中文';
+  quizWordText.textContent=word;
+  quizChoices=buildQuizChoices(quizCurrent,'en_to_zh');
+  quizChoiceGrid.innerHTML=quizChoices.map((choice,index)=>renderQuizChoice(choice,index)).join('');
+}
+function startQuiz(scope=quizScope,type=quizType){
+  quizScope=scope;
+  quizType=type;
+  quizItems=shuffleList(getQuizPool(scope));
+  quizScore=0;
+  quizTotal=0;
+  quizScopeSelect.value=scope;
+  quizTypeSelect.value=type;
+  resetQuizQuestion();
+}
+function showQuizMode(){
+  studySessionType='quiz';
+  studyModeView.classList.add('screen-hidden');
+  wordListView.classList.add('screen-hidden');
+  cardView.classList.add('screen-hidden');
+  quizView.classList.remove('screen-hidden');
+  updateStudySubtitleText('quiz');
+  startQuiz(quizScope);
+}
+function answerQuiz(choiceIndex, button){
+  if(!quizCurrent || quizAnswered) return;
+  quizAnswered=true;
+  quizTotal+=1;
+  const selected=quizChoices[Number(choiceIndex)];
+  const answerText=quizType==='zh_to_en' ? getQuizWord(quizCurrent) : getQuizMeaning(quizCurrent);
+  const correct=!!selected?.isAnswer;
+  if(correct) quizScore+=1;
+  quizChoiceGrid.innerHTML=quizChoices.map((choice,index)=>renderQuizChoice(choice,index,{answered:true})).join('');
+  if(button && !correct){
+    const wrongBtn=quizChoiceGrid.querySelector(`[data-quiz-choice="${Number(choiceIndex)}"]`);
+    if(wrongBtn) wrongBtn.classList.add('is-wrong');
+  }
+  quizResultText.textContent=correct ? '答對。' : `答錯，正確答案：${answerText}`;
+  quizMetaText.textContent=`${getQuizScopeLabel()}｜${getQuizTypeLabel()}｜已答 ${quizTotal} 題｜答對 ${quizScore} 題`;
+}
+function answerSpellingQuiz(){
+  if(!quizCurrent || quizAnswered) return;
+  quizAnswered=true;
+  quizTotal+=1;
+  const answerText=getQuizWord(quizCurrent);
+  const userText=quizSpellingInput.value;
+  const correct=normalizeQuizAnswer(userText)===normalizeQuizAnswer(answerText);
+  if(correct) quizScore+=1;
+  quizSpellingInput.disabled=true;
+  quizSpellingInput.classList.toggle('is-correct', correct);
+  quizSpellingInput.classList.toggle('is-wrong', !correct);
+  submitQuizSpellingBtn.disabled=true;
+  quizResultText.textContent=correct ? '答對。' : `答錯，正確拼法：${answerText}`;
+  quizMetaText.textContent=`${getQuizScopeLabel()}｜${getQuizTypeLabel()}｜已答 ${quizTotal} 題｜答對 ${quizScore} 題`;
 }
 function startMemorizeMode(){
   studySessionType='memorize';
@@ -1799,6 +2676,13 @@ function markSeenOnce(){
   showNextGeneratedCard();
 }
 async function readCsvFile(file){ const buffer=await file.arrayBuffer(); const encodings=['utf-8','big5','gb18030','utf-16le']; for(const enc of encodings){ try{ const text=new TextDecoder(enc).decode(buffer); const parsed=parseCSV(text); if(parsed.length&&validateColumns(parsed)) return {parsed,encoding:enc}; }catch(e){} } return {parsed:[],encoding:''}; }
+function resolveDeckFetchUrl(url){
+  const raw=String(url||'').trim();
+  if(location.protocol==='file:' && raw && !/^[a-z][a-z0-9+.-]*:/i.test(raw) && !raw.startsWith('//')){
+    return new URL(raw.replace(/^\.?\//,''), APP_PUBLIC_BASE_URL).href;
+  }
+  return raw;
+}
 async function fetchDeckCsv(url){
   const raw=String(url||'').trim();
   if(isGoogleSheetUrl(raw)){
@@ -1826,7 +2710,8 @@ async function fetchDeckCsv(url){
     throw new Error(`Google Sheets 同步失敗。請確認已開啟「知道連結的任何人可檢視」。系統已先嘗試 Google Sheets 直接讀取，再嘗試 CSV 讀取；目前失敗。JSONP：${jsonpError || '未知錯誤'}；CSV：${lastError || '未知錯誤'}`);
   }
   try{
-    const res=await fetch(raw, {cache:'no-store'});
+    const fetchUrl=resolveDeckFetchUrl(raw);
+    const res=await fetch(fetchUrl, {cache:'no-store'});
     if(!res.ok) throw new Error(`讀取失敗（${res.status}）`);
     const text=await res.text();
     const parsed=parseCSV(text);
@@ -1837,7 +2722,7 @@ async function fetchDeckCsv(url){
     throw new Error(err?.message || '網址同步失敗');
   }
 }
-function clearCardUI(){ currentCard=null; words=[]; groups=[]; history=[]; historyIndex=-1; activeBrowseItems=[]; activeBrowseIndex=-1; studySessionType='memorize'; if(cardProgressText) cardProgressText.textContent='0/0'; wordText.textContent='請先載入題庫'; frontPhoneticText.textContent=''; quickWordText.textContent='—'; quickMeaningText.textContent='—'; quickExampleText.textContent='—'; backWordText.textContent='—'; posText.textContent='—'; meaningText.textContent='—'; usageText.textContent='—'; wordFormText.textContent='—'; tenseText.textContent='—'; vingText.textContent='—'; collocationText.textContent='—'; relatedText.textContent='—'; synonymsText.textContent='—'; antonymsText.textContent='—'; exampleText.textContent='—'; if(wordListContainer) wordListContainer.innerHTML=''; if(wordListEmpty) wordListEmpty.classList.add('hidden'); showStage(1); updateHeaderUI(); updateDifficultButtonUI(); updateStudyDeckTitle(); updateCardFooterNote(); }
+function clearCardUI(){ currentCard=null; words=[]; groups=[]; history=[]; historyIndex=-1; activeBrowseItems=[]; activeBrowseIndex=-1; quizItems=[]; quizCurrent=null; studySessionType='memorize'; if(cardProgressText) cardProgressText.textContent='0/0'; wordText.textContent='請先載入題庫'; frontPhoneticText.textContent=''; quickWordText.textContent='—'; quickMeaningText.textContent='—'; quickExampleText.textContent='—'; backWordText.textContent='—'; posText.textContent='—'; meaningText.textContent='—'; usageText.textContent='—'; wordFormText.textContent='—'; tenseText.textContent='—'; vingText.textContent='—'; collocationText.textContent='—'; relatedText.textContent='—'; synonymsText.textContent='—'; antonymsText.textContent='—'; exampleText.textContent='—'; if(wordListContainer) wordListContainer.innerHTML=''; if(wordListEmpty) wordListEmpty.classList.add('hidden'); if(quizView) quizView.classList.add('screen-hidden'); showStage(1); updateHeaderUI(); updateDifficultButtonUI(); updateStudyDeckTitle(); updateCardFooterNote(); }
 function startApp(items,sourceLabel=''){ words=items; if(!validateColumns(words)){ statusText.textContent='載入失敗：缺少必要欄位'; alert('CSV 至少需要包含：word_id、單字、定義'); return; } buildGroups(); loadState(); normalizeState(); maybeDailyReset(); saveWordsToStorage(); const estimatedQuestions=getEstimatedTotalQuestions(words); const gidNote=(currentDeckMeta?.type==='google_sheet' && currentDeckMeta?.url && !getGoogleSheetInfo(currentDeckMeta.url)?.hasExplicitGid) ? '；注意：目前網址未帶 gid，系統是用預設第一個工作表（gid=0）同步' : ''; statusText.textContent=`載入成功：共 ${words.length} 筆單字，估計 ${estimatedQuestions} 題${sourceLabel ? '（'+sourceLabel+'）' : ''}${gidNote}。請按「開始學習」進入模式選擇。`; history=[]; historyIndex=-1; activeBrowseItems=[]; activeBrowseIndex=-1; showNextGeneratedCard(); updateStudyDeckTitle(); updateCardFooterNote(); }
 function upsertCurrentDeckMeta(){ if(!currentDeckMeta) return; const idx=decks.findIndex(d=>d.id===currentDeckMeta.id); if(idx>=0) decks[idx]={...decks[idx], ...currentDeckMeta}; else decks.push(currentDeckMeta); saveDecks({markUpdated:true, autoPush:true}); renderDeckSelect(); updateDeckMetaText(); }
 function getDeckById(id){ return decks.find(d=>d.id===id) || null; }
@@ -2019,6 +2904,8 @@ saveDeckBtn.addEventListener('click', updateDeck);
 deleteDeckBtn.addEventListener('click', deleteDeck);
 loadDeckBtn.addEventListener('click', ()=>{ const id=deckSelect.value; if(!id){ alert('請先選擇題庫。'); return; } loadDeckById(id); });
 syncDeckBtn.addEventListener('click', ()=>{ const id=deckSelect.value || currentDeckId; if(!id){ alert('請先選擇題庫。'); return; } loadDeckById(id,{forceSync:true}); });
+if(importPendingDeckBtn) importPendingDeckBtn.addEventListener('click', importPendingDeck);
+if(refreshPendingDecksBtn) refreshPendingDecksBtn.addEventListener('click', ()=>refreshPendingDecks());
 saveCloudConfigBtn.addEventListener('click', async ()=>{
   cloudConfig.scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput.value);
   cloudConfig.userKey=String(cloudUserKeyInput.value||'').trim();
@@ -2032,6 +2919,14 @@ if(managerCollapseBtn){
   managerCollapseBtn.addEventListener('click', ()=>{
     const isCollapsed = !!managerPanelBody && managerPanelBody.classList.contains('hidden');
     setManagerPanelCollapsed(!isCollapsed);
+  });
+}
+if(managerPanelBody){
+  managerPanelBody.addEventListener('click', e=>{
+    const button=e.target.closest('.section-collapse-btn');
+    if(!button) return;
+    const target=document.getElementById(button.dataset.collapseTarget || '');
+    setSectionCollapsed(button, target ? !target.classList.contains('hidden') : false);
   });
 }
 pushCloudBtn.addEventListener('click', ()=>pushCloudProgress());
@@ -2064,6 +2959,100 @@ if(learningDeckSelect){
 deckNameInput.addEventListener('input', ()=>{ if(!deckSelect.value && !currentDeckId) updateDeckMetaText(); });
 deckUrlInput.addEventListener('input', ()=>{});
 
+function getSavedTheme(){
+  try{ return localStorage.getItem(THEME_PREF_KEY)==='dark' ? 'dark' : 'light'; }
+  catch(e){ return 'light'; }
+}
+function applyTheme(theme){
+  const isDark=theme==='dark';
+  document.body.classList.toggle('theme-dark', isDark);
+  if(themeToggleBtn){
+    themeToggleBtn.textContent=isDark ? '淺色' : '深色';
+    themeToggleBtn.setAttribute('aria-pressed', String(isDark));
+    themeToggleBtn.setAttribute('aria-label', isDark ? '切換淺色模式' : '切換深色模式');
+  }
+}
+function toggleTheme(){
+  const next=document.body.classList.contains('theme-dark') ? 'light' : 'dark';
+  applyTheme(next);
+  try{ localStorage.setItem(THEME_PREF_KEY, next); }catch(e){}
+}
+if(themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
+
+function createSectionHeader(title,note,targetId){
+  const head=document.createElement('div');
+  head.className='section-head';
+  const textWrap=document.createElement('div');
+  const titleEl=document.createElement('div');
+  titleEl.className='manage-section-title';
+  titleEl.textContent=title;
+  const noteEl=document.createElement('div');
+  noteEl.className='section-source-note';
+  noteEl.textContent=note;
+  textWrap.append(titleEl,noteEl);
+  const btn=document.createElement('button');
+  btn.className='section-collapse-btn';
+  btn.type='button';
+  btn.textContent='收合';
+  btn.dataset.collapseTarget=targetId;
+  btn.setAttribute('aria-expanded','true');
+  head.append(textWrap,btn);
+  return head;
+}
+function wrapManageSection(section,{title,note,bodyId}){
+  if(!section || section.dataset.sectionReady==='true') return;
+  const oldTitle=section.querySelector(':scope > .manage-section-title');
+  if(oldTitle) oldTitle.remove();
+  const body=document.createElement('div');
+  body.id=bodyId;
+  body.className='section-body';
+  while(section.firstChild) body.appendChild(section.firstChild);
+  section.append(createSectionHeader(title,note,bodyId),body);
+  section.dataset.sectionReady='true';
+}
+function setupManagerSections(){
+  if(!managerPanelBody || managerPanelBody.dataset.sectionsReady==='true') return;
+  const deckSection=deckSelect?.closest('.manage-section');
+  const cloudSection=cloudScriptUrlInput?.closest('.manage-section');
+  const pendingBox=pendingDeckSelect?.closest('.pending-deck-box');
+  if(!deckSection || !cloudSection || !pendingBox) return;
+
+  const pendingSection=document.createElement('div');
+  pendingSection.className='manage-section pending-deck-section';
+  pendingBox.id='pendingDeckSectionBody';
+  pendingBox.classList.add('section-body');
+  const pendingTitle=pendingBox.querySelector('.pending-deck-title');
+  if(pendingTitle) pendingTitle.remove();
+  pendingSection.append(
+    createSectionHeader('未入庫題庫','來源：GitHub data/decks.json 與 data/*.csv。選擇後會加入目前題庫清單。','pendingDeckSectionBody'),
+    pendingBox
+  );
+  managerPanelBody.appendChild(pendingSection);
+
+  wrapManageSection(cloudSection,{
+    title:'雲端同步',
+    note:'來源：Google Apps Script + Google Sheets，只同步學習進度與題庫清單，不存放 CSV 題庫內容。',
+    bodyId:'cloudSyncSectionBody'
+  });
+  wrapManageSection(deckSection,{
+    title:'題庫管理',
+    note:'來源：可手動貼 GitHub CSV 網址或 Google Sheets 連結；此區管理目前裝置已加入的題庫。',
+    bodyId:'deckManagementSectionBody'
+  });
+  managerPanelBody.appendChild(cloudSection);
+  managerPanelBody.appendChild(deckSection);
+  setSectionCollapsed(cloudSection.querySelector('.section-collapse-btn'), true);
+  setSectionCollapsed(deckSection.querySelector('.section-collapse-btn'), true);
+  managerPanelBody.dataset.sectionsReady='true';
+}
+function setSectionCollapsed(button,collapsed){
+  const target=document.getElementById(button?.dataset?.collapseTarget || '');
+  if(!target) return;
+  target.classList.toggle('hidden', !!collapsed);
+  button.textContent=collapsed ? '展開' : '收合';
+  button.setAttribute('aria-expanded', String(!collapsed));
+}
+
 function openHelpModal(){ helpModal.classList.remove('hidden'); }
 function closeHelpModal(){ helpModal.classList.add('hidden'); }
 helpBtn.addEventListener('click', openHelpModal);
@@ -2077,7 +3066,20 @@ backHomeBtn.addEventListener('click', ()=>showHomeScreen());
 memorizeModeBtn.addEventListener('click', ()=>startMemorizeMode());
 deckWordModeBtn.addEventListener('click', ()=>openBrowseMode('browse_all'));
 difficultWordModeBtn.addEventListener('click', ()=>openBrowseMode('browse_difficult'));
+quizModeBtn.addEventListener('click', ()=>showQuizMode());
 backToStudyModesBtn.addEventListener('click', ()=>showStudyModeSelection());
+backToStudyModesFromQuizBtn.addEventListener('click', ()=>showStudyModeSelection());
+quizScopeSelect.addEventListener('change', ()=>startQuiz(quizScopeSelect.value || 'today', quizType));
+quizTypeSelect.addEventListener('change', ()=>startQuiz(quizScope, quizTypeSelect.value || 'en_to_zh'));
+quizChoiceGrid.addEventListener('click', e=>{
+  const trigger=e.target.closest('[data-quiz-choice]');
+  if(!trigger) return;
+  answerQuiz(trigger.dataset.quizChoice, trigger);
+});
+submitQuizSpellingBtn.addEventListener('click', ()=>answerSpellingQuiz());
+quizSpellingInput.addEventListener('keydown', e=>{ if(e.key==='Enter') answerSpellingQuiz(); });
+restartQuizBtn.addEventListener('click', ()=>startQuiz(quizScope, quizType));
+nextQuizBtn.addEventListener('click', ()=>resetQuizQuestion());
 
 card.addEventListener('click', e=>{ if(e.target.closest('button')) return; cardNextStage(); });
 wordListContainer.addEventListener('click', e=>{ const trigger=e.target.closest('[data-word-index]'); if(!trigger) return; openBrowseCardAt(Number(trigger.dataset.wordIndex)); });
@@ -2105,10 +3107,13 @@ progressFile.addEventListener('change', async e=>{
 });
 
 async function bootstrap(){
+  applyTheme(getSavedTheme());
   cloudConfig=loadCloudConfig();
   deckRegistryMeta=loadDeckRegistryMeta();
   loadDecks();
   renderDeckSelect();
+  setupManagerSections();
+  await refreshPendingDecks({silent:true});
   updateCloudMetaText();
   setManagerPanelCollapsed(false);
   showHomeScreen();
