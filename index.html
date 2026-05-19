@@ -3343,6 +3343,61 @@ function sanitizeDeckMetaForCloud(deck){
     totalGroups:Number(normalized.totalGroups)||0
   };
 }
+function getDeckMergeKey(deck){
+  const normalized=normalizeDeckMeta(deck);
+  if(!normalized) return '';
+  return String(normalized.cloudDeckKey || normalized.normalizedUrl || normalized.url || normalized.id || '').trim();
+}
+function getDeckUpdatedTime(deck){
+  const normalized=normalizeDeckMeta(deck);
+  const candidates=[normalized?.updatedAt, normalized?.lastSyncedAt, normalized?.createdAt];
+  for(const value of candidates){
+    const ts=Date.parse(String(value||''));
+    if(Number.isFinite(ts)) return ts;
+  }
+  return 0;
+}
+function mergeDeckMeta(existing,incoming){
+  const current=normalizeDeckMeta(existing);
+  const next=normalizeDeckMeta(incoming);
+  if(!current) return next;
+  if(!next) return current;
+  const currentTime=getDeckUpdatedTime(current);
+  const nextTime=getDeckUpdatedTime(next);
+  const newer=nextTime >= currentTime ? next : current;
+  const older=nextTime >= currentTime ? current : next;
+  const merged=normalizeDeckMeta({...older, ...newer});
+  if(current.id) merged.id=current.id;
+  if(!merged.createdAt && current.createdAt) merged.createdAt=current.createdAt;
+  if(!merged.lastSyncedAt && current.lastSyncedAt) merged.lastSyncedAt=current.lastSyncedAt;
+  return merged;
+}
+function mergeDeckLists(localList,remoteList){
+  const merged=[];
+  const positions=new Map();
+  const addDeck=deck=>{
+    const normalized=normalizeDeckMeta(deck);
+    const key=getDeckMergeKey(normalized);
+    if(!normalized || !key) return;
+    if(positions.has(key)){
+      const index=positions.get(key);
+      merged[index]=mergeDeckMeta(merged[index], normalized);
+    }else{
+      positions.set(key, merged.length);
+      merged.push(normalized);
+    }
+  };
+  (Array.isArray(localList)?localList:[]).forEach(addDeck);
+  (Array.isArray(remoteList)?remoteList:[]).forEach(addDeck);
+  return merged;
+}
+function deckListSignature(list){
+  return JSON.stringify((Array.isArray(list)?list:[])
+    .map(sanitizeDeckMetaForCloud)
+    .filter(Boolean)
+    .map(deck=>({...deck, id:''}))
+    .sort((a,b)=>getDeckMergeKey(a).localeCompare(getDeckMergeKey(b))));
+}
 function buildDeckIndexPayload(){
   const updatedAt=String(deckRegistryMeta?.updatedAt||'').trim() || new Date().toISOString();
   if(!deckRegistryMeta?.updatedAt) deckRegistryMeta={updatedAt};
@@ -3367,7 +3422,7 @@ function hasCloudDeckIndexConfig(){
 }
 function applyCloudDeckIndexToLocal(payload,{autoPush=false}={}){
   const incomingDecks=Array.isArray(payload?.decks)?payload.decks:[];
-  decks=incomingDecks.map(normalizeDeckMeta).filter(Boolean);
+  decks=mergeDeckLists(decks, incomingDecks);
   deckRegistryMeta={updatedAt:String(payload?.updatedAt||'').trim()};
   persistDeckRegistryLocal({markUpdated:false, autoPush});
   ensureBuiltInDecks({markUpdated:true, autoPush:false});
@@ -3384,6 +3439,11 @@ function applyCloudDeckIndexToLocal(payload,{autoPush=false}={}){
   }
   updateDeckMetaText();
   updateCloudMetaText();
+}
+async function loadSingleDeckIfIdle(){
+  if(currentDeckId || words.length || !Array.isArray(decks) || decks.length!==1) return false;
+  await loadDeckById(decks[0].id);
+  return true;
 }
 function scheduleCloudDeckIndexAutoPush(){
   if(!hasCloudDeckIndexConfig()) return;
@@ -3869,31 +3929,54 @@ async function pushCloudDeckIndexSilent(){
     }
   }
 }
-async function reconcileCloudDeckIndex({silent=true}={}){
+async function reconcileCloudDeckIndex({silent=true, autoLoadSingle=false}={}){
   if(!hasCloudDeckIndexConfig()) return false;
   try{
     const remoteIndex=await fetchCloudDeckIndex();
     const remoteDecks=Array.isArray(remoteIndex?.decks)?remoteIndex.decks:[];
+    const localDecks=Array.isArray(decks)?decks:[];
     const remoteHas=remoteDecks.length>0;
-    const localHas=Array.isArray(decks) && decks.length>0;
+    const localHas=localDecks.length>0;
     const remoteTs=getDeckRegistryUpdatedTime(remoteIndex);
     const localTs=getDeckRegistryUpdatedTime(deckRegistryMeta);
+    const mergedDecks=mergeDeckLists(localDecks, remoteDecks);
+    const mergedSignature=deckListSignature(mergedDecks);
+    const localSignature=deckListSignature(localDecks);
+    const remoteSignature=deckListSignature(remoteDecks);
+    const localNeedsUpdate=mergedSignature!==localSignature || (remoteHas && remoteTs > localTs);
+    const remoteNeedsUpdate=mergedSignature!==remoteSignature || (localHas && localTs > remoteTs);
+    let changed=false;
 
-    if(remoteHas && (!localHas || remoteTs > localTs)){
-      applyCloudDeckIndexToLocal(remoteIndex,{autoPush:false});
-      if(!silent) statusText.textContent='已同步雲端題庫清單。';
-      return true;
+    if(localNeedsUpdate){
+      decks=mergedDecks;
+      deckRegistryMeta={updatedAt:remoteNeedsUpdate ? new Date().toISOString() : String(remoteIndex?.updatedAt || deckRegistryMeta?.updatedAt || new Date().toISOString()).trim()};
+      persistDeckRegistryLocal({markUpdated:false, autoPush:false});
+      renderDeckSelect();
+      updateDeckMetaText();
+      updateCloudMetaText();
+      changed=true;
     }
-    if(localHas && (!remoteHas || localTs > remoteTs)){
+
+    if(remoteNeedsUpdate){
+      if(!localNeedsUpdate){
+        decks=mergedDecks;
+        deckRegistryMeta={updatedAt:new Date().toISOString()};
+        persistDeckRegistryLocal({markUpdated:false, autoPush:false});
+      }
       await pushCloudDeckIndexSilent();
-      if(!silent) statusText.textContent='已同步本機題庫清單到雲端。';
-      return false;
+      if(!silent) statusText.textContent=localNeedsUpdate ? '已合併並同步題庫清單。' : '已同步本機題庫清單到雲端。';
+      changed=true;
+    }else if(localNeedsUpdate && !silent){
+      statusText.textContent='已同步雲端題庫清單。';
     }
-    if(remoteHas && localHas && remoteTs === localTs){
+
+    if(autoLoadSingle) await loadSingleDeckIfIdle();
+    if(!changed && remoteHas && localHas && remoteTs === localTs){
       applyCloudDeckIndexToLocal(remoteIndex,{autoPush:false});
+      if(autoLoadSingle) await loadSingleDeckIfIdle();
       return true;
     }
-    return false;
+    return changed;
   }catch(err){
     console.warn('同步題庫清單失敗', err);
     if(!silent) statusText.textContent=`題庫清單同步失敗：${err?.message || err}`;
@@ -5032,11 +5115,13 @@ saveDeckBtn.addEventListener('click', updateDeck);
 deleteDeckBtn.addEventListener('click', deleteDeck);
 loadDeckBtn.addEventListener('click', ()=>{ const id=deckSelect.value; if(!id){ alert('請先選擇題庫。'); return; } loadDeckById(id); });
 syncDeckBtn.addEventListener('click', ()=>{ const id=deckSelect.value || currentDeckId; if(!id){ alert('請先選擇題庫。'); return; } loadDeckById(id,{forceSync:true}); });
-saveCloudConfigBtn.addEventListener('click', ()=>{
+saveCloudConfigBtn.addEventListener('click', async ()=>{
   cloudConfig.scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput.value) || DEFAULT_CLOUD_SCRIPT_URL;
   cloudConfig.userKey=String(cloudUserKeyInput.value||'').trim() || DEFAULT_CLOUD_USER_KEY;
   saveCloudConfig();
-  statusText.textContent='已儲存 Apps Script URL 與 userKey。此操作不會同步題庫清單或學習進度。';
+  statusText.textContent='已儲存 Apps Script URL 與 userKey，正在同步題庫清單...';
+  const synced=await reconcileCloudDeckIndex({silent:false, autoLoadSingle:true});
+  if(!synced) statusText.textContent='已儲存 Apps Script URL 與 userKey；目前沒有新的雲端題庫清單。';
 });
 if(managerCollapseBtn){
   managerCollapseBtn.addEventListener('click', ()=>{
@@ -5341,7 +5426,7 @@ async function bootstrap(){
     updateDeckMetaText();
     updateCloudMetaText();
   }
-  reconcileCloudDeckIndex({silent:true}).then(()=>renderDeckSelect()).catch(err=>console.warn('啟動時同步題庫清單失敗', err));
+  reconcileCloudDeckIndex({silent:true, autoLoadSingle:true}).then(()=>renderDeckSelect()).catch(err=>console.warn('啟動時同步題庫清單失敗', err));
 }
 
 updateHeaderUI();
