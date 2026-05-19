@@ -2872,6 +2872,21 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
   font-weight:400;
 }
 
+/* Keep primary navigation pinned like a mobile app tab bar. */
+.wrap{
+  padding-bottom:calc(108px + env(safe-area-inset-bottom, 0px));
+}
+.app-tabbar{
+  position:fixed;
+  left:50%;
+  right:auto;
+  bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index:80;
+  width:min(calc(100% - 24px),var(--app-max));
+  margin:0;
+  transform:translateX(-50%);
+}
+
 </style>
 </head>
 <body>
