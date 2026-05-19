@@ -1,16 +1,14 @@
-# 內建題庫 CSV
+# 題庫資料夾
 
-此資料夾提供 GitHub Pages 版英文單字卡直接載入的內建題庫。
+此資料夾是舊版 GitHub Pages 內建題庫資料夾。
 
-目前內建：
+目前狀態：
 
-- `114_cmu_english_vocab.csv`：中國醫 114 英文單字庫，381 筆。
-- `decks.json`：GitHub 題庫清單。App 的「未入庫題庫」會讀取此檔，顯示已上傳但尚未加入目前題庫清單的 CSV。
+- App 不再內建 GitHub CSV 單字檔。
+- 舊版 `decks.json` 題庫清單已移除；目前 App 不再讀取此檔。
 
 部署方式：
 
 - GitHub Pages 讀取根目錄 `index.html`。
-- App 題庫資料從 `data/114_cmu_english_vocab.csv` 讀取。
-- 新增題庫時，將 CSV 放入 `data/`，並在 `data/decks.json` 新增一筆題庫資料。
-- 題庫更新直接修改此 CSV 後推送到 GitHub。
+- 新增題庫時，建議在 App 的「題庫管理」貼上 Google Sheets 網址，再按「新增題庫」與「載入題庫」。
 - 學習進度透過 Apps Script / Google Sheets 同步；本機瀏覽器仍會保留 localStorage 快取。

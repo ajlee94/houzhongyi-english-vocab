@@ -2933,8 +2933,7 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
         </div>
       </div>
       <div class="settings-tabs" role="tablist" aria-label="設定分類">
-        <button class="settings-tab is-active" type="button" data-settings-tab="pending">未入庫</button>
-        <button class="settings-tab" type="button" data-settings-tab="deck">題庫</button>
+        <button class="settings-tab is-active" type="button" data-settings-tab="deck">題庫</button>
         <button class="settings-tab" type="button" data-settings-tab="sync">同步</button>
       </div>
       <div id="managerPanelBody" class="manage-panel-body">
@@ -2955,27 +2954,13 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
           <div id="deckMetaText" class="deck-meta">尚未建立題庫。可貼上 CSV / Google Sheets 網址並新增題庫。</div>
         </div>
 
-        <div class="manage-section pending-deck-section">
-          <div class="pending-deck-box">
-            <div class="pending-deck-title">未入庫題庫</div>
-            <div class="pending-deck-row">
-              <select id="pendingDeckSelect">
-                <option value="">讀取 GitHub 題庫清單中...</option>
-              </select>
-              <button id="importPendingDeckBtn" class="btn-secondary" type="button">加入目前題庫</button>
-              <button id="refreshPendingDecksBtn" class="btn-secondary" type="button">重新整理</button>
-            </div>
-            <div id="pendingDeckMetaText" class="pending-deck-meta">會讀取 data/decks.json；已加入的題庫不會重複顯示。</div>
-          </div>
-        </div>
-
         <div class="manage-section cloud-sync-section">
           <div class="manage-section-title">雲端同步</div>
-                    <div class="sync-help-note"><strong>同步說明</strong>這裡只同步學習進度與題庫清單設定，不會更新 GitHub CSV 題庫內容。換裝置時先確認 Apps Script URL 與 userKey，再按「下載雲端進度」。</div>
+                    <div class="sync-help-note"><strong>同步說明</strong>新增或更新題庫時，題庫清單會依目前 Apps Script URL 與 userKey 自動同步到雲端。這裡的儲存按鈕只保存 Apps Script URL 與 userKey；不會修改題庫內容。</div>
           <div class="deck-grid">
             <input id="cloudScriptUrlInput" type="text" placeholder="貼上 Google Apps Script Web App 網址" value="https://script.google.com/macros/s/AKfycbyhK5odtV6a13q3m0RHOA4gyMaW2Y9LS1RuOB26p34v7_bq2Jv0drGdbcuKWp10PwZe/exec" class="wide" />
             <input id="cloudUserKeyInput" type="text" placeholder="同步帳號代號（例如：lee_vocab）" value="aj_vocab" class="wide" />
-            <button id="saveCloudConfigBtn" class="btn-secondary">儲存同步設定</button>
+            <button id="saveCloudConfigBtn" class="btn-secondary">儲存 URL / userKey</button>
             <button id="pushCloudBtn" class="btn-secondary">上傳雲端進度</button>
             <button id="pullCloudBtn" class="btn-secondary">下載雲端進度</button>
             <button id="resetBtn" class="btn-secondary">重設本機+雲端進度</button>
@@ -3236,14 +3221,13 @@ const ACTIVE_DECK_ID_KEY='flashcard_active_deck_id_v1';
 const CLOUD_SYNC_CONFIG_KEY='flashcard_cloud_sync_config_v1';
 const THEME_PREF_KEY='flashcard_theme_pref_v1';
 const APP_PUBLIC_BASE_URL='https://ajlee94.github.io/houzhongyi-english-vocab/';
-const APP_DECK_MANIFEST_URL='data/decks.json';
 const CLOUD_SYNC_DISABLED=false;
 const DEFAULT_CLOUD_SCRIPT_URL='https://script.google.com/macros/s/AKfycbyhK5odtV6a13q3m0RHOA4gyMaW2Y9LS1RuOB26p34v7_bq2Jv0drGdbcuKWp10PwZe/exec';
 const DEFAULT_CLOUD_USER_KEY='aj_vocab';
-const BUILT_IN_DECKS=[
-  {id:'builtin_cmu_114', name:'中國醫 114 英文單字庫', url:'data/114_cmu_english_vocab.csv', normalizedUrl:'data/114_cmu_english_vocab.csv', cloudDeckKey:'data/114_cmu_english_vocab.csv', type:'csv', createdAt:'2026-05-06T00:00:00.000Z', updatedAt:'2026-05-06T00:00:00.000Z', lastSyncedAt:'', totalWords:381, totalGroups:0, builtIn:true}
-];
+const BUILT_IN_DECKS=[];
 const RETIRED_BUILT_IN_DECK_KEYS=new Set([
+  'builtin_cmu_114',
+  'data/114_cmu_english_vocab.csv',
   'builtin_cmu_112',
   'builtin_cmu_113',
   'data/112_cmu_english_vocab.csv',
@@ -3259,7 +3243,6 @@ const el=id=>document.getElementById(id);
 const addDailyLimitBtn=el('addDailyLimitBtn'), resetBtn=el('resetBtn'), clearBtn=el('clearBtn');
 const exportProgressBtn=el('exportProgressBtn'), importProgressBtn=el('importProgressBtn'), progressFile=el('progressFile');
 const deckSelect=el('deckSelect'), learningDeckSelect=el('learningDeckSelect'), deckNameInput=el('deckNameInput'), deckUrlInput=el('deckUrlInput'), addDeckBtn=el('addDeckBtn'), saveDeckBtn=el('saveDeckBtn'), deleteDeckBtn=el('deleteDeckBtn'), loadDeckBtn=el('loadDeckBtn'), syncDeckBtn=el('syncDeckBtn'), deckMetaText=el('deckMetaText');
-const pendingDeckSelect=el('pendingDeckSelect'), importPendingDeckBtn=el('importPendingDeckBtn'), refreshPendingDecksBtn=el('refreshPendingDecksBtn'), pendingDeckMetaText=el('pendingDeckMetaText');
 const cloudScriptUrlInput=el('cloudScriptUrlInput'), cloudUserKeyInput=el('cloudUserKeyInput'), saveCloudConfigBtn=el('saveCloudConfigBtn'), pushCloudBtn=el('pushCloudBtn'), pullCloudBtn=el('pullCloudBtn'), cloudMetaText=el('cloudMetaText'), cloudSyncFrame=el('cloudSyncFrame');
 const homeScreen=el('homeScreen'), homeMainPanel=el('homeMainPanel'), studyScreen=el('studyScreen'), enterStudyBtn=el('enterStudyBtn'), backHomeBtn=el('backHomeBtn'), studyDeckTitle=el('studyDeckTitle'), studySubtitle=el('studySubtitle');
 const topHelpBtn=el('topHelpBtn'), learningHelpModal=el('learningHelpModal'), closeLearningHelpBtn=el('closeLearningHelpBtn'), helpBtn=el('helpBtn'), helpModal=el('helpModal'), closeHelpBtn=el('closeHelpBtn');
@@ -3303,7 +3286,6 @@ let quizScope='today', quizType='en_to_zh', quizItems=[], quizChoices=[], quizCu
 let activeBrowseItems=[];
 let activeBrowseIndex=-1;
 let decks=[];
-let pendingDecks=[];
 let deckRegistryMeta=defaultDeckRegistryMeta();
 let currentDeckId='';
 let currentDeckMeta=null;
@@ -3610,121 +3592,6 @@ function ensureBuiltInDecks({markUpdated=false, autoPush=false}={}){
   if(changed) persistDeckRegistryLocal({markUpdated, autoPush});
   return changed;
 }
-function makeDeckIdFromUrl(url){
-  const slug=String(url||'').replace(/^https?:\/\//,'').replace(/[^a-z0-9]+/gi,'_').replace(/^_+|_+$/g,'').slice(0,72);
-  return `github_${slug || Date.now()}`;
-}
-function inferDeckNameFromUrl(url){
-  const filename=String(url||'').split(/[?#]/)[0].split('/').pop() || '';
-  const lower=filename.toLowerCase();
-  const yearMatch=lower.match(/(?:^|_)(10[6-9]|11[0-9])(?:_|$)/);
-  const year=yearMatch ? yearMatch[1] : '';
-  const schoolMap=[
-    {keys:['cmu','china_medical','china-medical','中國醫'], label:'中國醫'},
-    {keys:['isu','i_shou','i-shou','義守'], label:'義守'},
-    {keys:['tcu','tzuchi','tzu_chi','tzu-chi','慈濟'], label:'慈濟'}
-  ];
-  const school=schoolMap.find(item=>item.keys.some(key=>lower.includes(String(key).toLowerCase())))?.label || '';
-  if(school && year) return `${school} ${year} 英文單字庫`;
-  if(year) return `${year} 英文單字庫`;
-  if(school) return `${school} 英文單字庫`;
-  return filename.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ').trim();
-}
-function normalizeManifestDeck(entry){
-  if(!entry || typeof entry!=='object') return null;
-  const url=String(entry.url||entry.path||'').trim();
-  if(!url) return null;
-  const normalizedUrl=normalizeDeckUrl(url);
-  const inferredName=inferDeckNameFromUrl(normalizedUrl);
-  return normalizeDeckMeta({
-    id:String(entry.id||'').trim() || makeDeckIdFromUrl(normalizedUrl),
-    name:String(entry.name||entry.title||inferredName||normalizedUrl).trim(),
-    url:normalizedUrl,
-    normalizedUrl,
-    cloudDeckKey:String(entry.cloudDeckKey||normalizedUrl).trim(),
-    type:isGoogleSheetUrl(normalizedUrl)?'google_sheet':'csv',
-    createdAt:String(entry.createdAt||'').trim() || new Date().toISOString(),
-    updatedAt:String(entry.updatedAt||'').trim() || new Date().toISOString(),
-    lastSyncedAt:'',
-    totalWords:Number(entry.totalWords)||0,
-    totalGroups:Number(entry.totalGroups)||0
-  });
-}
-function isDeckAlreadyRegistered(candidate){
-  if(!candidate) return true;
-  const keys=[candidate.id,candidate.cloudDeckKey,candidate.normalizedUrl,candidate.url].map(v=>String(v||'').trim()).filter(Boolean);
-  return decks.some(deck=>{
-    const existing=[deck.id,deck.cloudDeckKey,deck.normalizedUrl,deck.url].map(v=>String(v||'').trim()).filter(Boolean);
-    return keys.some(key=>existing.includes(key));
-  });
-}
-function renderPendingDeckSelect(){
-  if(!pendingDeckSelect || !pendingDeckMetaText) return;
-  const available=pendingDecks.filter(deck=>!isDeckAlreadyRegistered(deck));
-  pendingDeckSelect.innerHTML='';
-  if(!available.length){
-    pendingDeckSelect.innerHTML='<option value="">目前沒有未入庫題庫</option>';
-    pendingDeckSelect.disabled=true;
-    if(importPendingDeckBtn) importPendingDeckBtn.disabled=true;
-    pendingDeckMetaText.textContent='GitHub 題庫清單已讀取；所有清單內題庫都已在目前題庫清單中。';
-    return;
-  }
-  available.forEach((deck,index)=>{
-    const option=document.createElement('option');
-    option.value=String(index);
-    option.textContent=deck.name;
-    pendingDeckSelect.appendChild(option);
-  });
-  pendingDeckSelect.disabled=false;
-  if(importPendingDeckBtn) importPendingDeckBtn.disabled=false;
-  pendingDeckMetaText.textContent=`可加入 ${available.length} 份 GitHub CSV 題庫。`;
-}
-async function refreshPendingDecks({silent=false}={}){
-  if(!pendingDeckSelect || !pendingDeckMetaText) return;
-  if(!silent) pendingDeckMetaText.textContent='正在讀取 GitHub 題庫清單...';
-  try{
-    let manifest=null;
-    let lastError='';
-    for(const manifestUrl of buildDeckFetchCandidates(APP_DECK_MANIFEST_URL)){
-      try{
-        const res=await fetch(manifestUrl,{cache:'no-store'});
-        if(!res.ok) throw new Error(`讀取失敗（${res.status}）`);
-        manifest=await res.json();
-        break;
-      }catch(err){
-        lastError=err?.message || String(err);
-      }
-    }
-    if(!manifest) throw new Error(lastError || '讀取失敗');
-    const sourceDecks=Array.isArray(manifest) ? manifest : (Array.isArray(manifest?.decks) ? manifest.decks : []);
-    pendingDecks=sourceDecks.map(normalizeManifestDeck).filter(Boolean);
-    renderPendingDeckSelect();
-  }catch(err){
-    pendingDecks=BUILT_IN_DECKS.map(normalizeManifestDeck).filter(Boolean);
-    renderPendingDeckSelect();
-    if(pendingDeckMetaText) pendingDeckMetaText.textContent='GitHub 題庫清單尚未部署；目前先用內建題庫清單檢查。';
-  }
-}
-async function importPendingDeck(){
-  const available=pendingDecks.filter(deck=>!isDeckAlreadyRegistered(deck));
-  const selected=available[Number(pendingDeckSelect?.value || 0)];
-  if(!selected){ alert('目前沒有可加入的未入庫題庫。'); return; }
-  const duplicate=decks.find(deck=>deck.cloudDeckKey===selected.cloudDeckKey || deck.normalizedUrl===selected.normalizedUrl || deck.url===selected.url);
-  if(duplicate){
-    setCurrentDeck(duplicate);
-    renderPendingDeckSelect();
-    return;
-  }
-  const deck=normalizeDeckMeta({...selected, id:selected.id || newDeckId()});
-  decks.push(deck);
-  saveDecks({markUpdated:true, autoPush:true});
-  setCurrentDeck(deck);
-  renderDeckSelect();
-  renderPendingDeckSelect();
-  statusText.textContent=`已加入題庫：${deck.name}，正在載入 CSV...`;
-  await loadDeckById(deck.id,{forceSync:true});
-  renderPendingDeckSelect();
-}
 function getCloudDeckKey(){
   if(!currentDeckMeta) return '';
   return String(currentDeckMeta.cloudDeckKey || '').trim();
@@ -3740,7 +3607,7 @@ function hasCloudSyncConfig(){
 }
 function ensureCloudReady(){
   if(CLOUD_SYNC_DISABLED){
-    alert('GitHub 版已取消 Apps Script 同步；請直接修改 GitHub data/114_cmu_english_vocab.csv 來更新題庫。');
+    alert('雲端同步目前已停用。');
     return false;
   }
   if(!words.length || !currentDeckId){
@@ -4361,7 +4228,7 @@ function getLearningDateKey(now=new Date()){ const d=new Date(now); const parts=
 function setManagerPanelCollapsed(collapsed){ if(!managerPanelBody || !managerCollapseBtn) return; managerPanelBody.classList.toggle('hidden', !!collapsed); managerCollapseBtn.textContent = collapsed ? '展開' : '收合'; managerCollapseBtn.setAttribute('aria-expanded', String(!collapsed)); }
 function getDailyLimitValue(value=state.dailyLimit){ const num=Number(value); return Number.isFinite(num) ? Math.max(0, Math.min(MAX_DAILY_NEW_LIMIT, num)) : DEFAULT_DAILY_NEW_LIMIT; }
 function roundUpToDailyStep(value){ const num=Number(value); if(!Number.isFinite(num) || num<=0) return 0; return Math.min(MAX_DAILY_NEW_LIMIT, Math.max(0, Math.floor(num))); }
-function saveDecks({markUpdated=true, autoPush=true}={}){ persistDeckRegistryLocal({markUpdated, autoPush}); renderPendingDeckSelect(); }
+function saveDecks({markUpdated=true, autoPush=true}={}){ persistDeckRegistryLocal({markUpdated, autoPush}); }
 function loadDecks(){ try{ const raw=localStorage.getItem(APP_DECKS_INDEX_KEY); decks = raw ? JSON.parse(raw) : []; if(!Array.isArray(decks)) decks=[]; decks=decks.map(normalizeDeckMeta).filter(Boolean); deckRegistryMeta=loadDeckRegistryMeta(); if(!deckRegistryMeta?.updatedAt && decks.length){ deckRegistryMeta.updatedAt=new Date().toISOString(); } persistDeckRegistryLocal({markUpdated:false, autoPush:false}); ensureBuiltInDecks({markUpdated:!raw, autoPush:false}); }catch(e){ decks=[]; deckRegistryMeta=loadDeckRegistryMeta(); ensureBuiltInDecks({markUpdated:true, autoPush:false}); } }
 function updateStudyDeckTitle(){ studyDeckTitle.textContent=`目前題庫：${currentDeckMeta?.name || '—'}`; }
 function isBrowseMode(){ return studySessionType==='browse_all' || studySessionType==='browse_difficult'; }
@@ -5084,7 +4951,13 @@ function addDeck(){
     setCurrentDeck(duplicate);
     return;
   }
-  decks.push(deck); saveDecks(); setCurrentDeck(deck); renderDeckSelect(); statusText.textContent=`已新增題庫：${deck.name}。可按「載入題庫」或「重新同步」。`;
+  decks.push(deck);
+  saveDecks();
+  renderDeckSelect();
+  deckSelect.value='';
+  fillDeckForm(null);
+  deckMetaText.textContent=`已新增題庫：${deck.name}。欄位已清空；若要載入或修改，請從上方題庫選單選擇。`;
+  statusText.textContent=`已新增題庫：${deck.name}。若同步設定正常，題庫清單會自動同步到其他裝置；請從題庫選單選擇後載入。`;
 }
 function updateDeck(){
   const id=deckSelect.value || currentDeckId;
@@ -5159,16 +5032,11 @@ saveDeckBtn.addEventListener('click', updateDeck);
 deleteDeckBtn.addEventListener('click', deleteDeck);
 loadDeckBtn.addEventListener('click', ()=>{ const id=deckSelect.value; if(!id){ alert('請先選擇題庫。'); return; } loadDeckById(id); });
 syncDeckBtn.addEventListener('click', ()=>{ const id=deckSelect.value || currentDeckId; if(!id){ alert('請先選擇題庫。'); return; } loadDeckById(id,{forceSync:true}); });
-if(importPendingDeckBtn) importPendingDeckBtn.addEventListener('click', importPendingDeck);
-if(refreshPendingDecksBtn) refreshPendingDecksBtn.addEventListener('click', ()=>refreshPendingDecks());
-saveCloudConfigBtn.addEventListener('click', async ()=>{
+saveCloudConfigBtn.addEventListener('click', ()=>{
   cloudConfig.scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput.value) || DEFAULT_CLOUD_SCRIPT_URL;
   cloudConfig.userKey=String(cloudUserKeyInput.value||'').trim() || DEFAULT_CLOUD_USER_KEY;
   saveCloudConfig();
-  statusText.textContent='已儲存雲端同步設定，正在同步題庫清單與進度設定...';
-  await reconcileCloudDeckIndex({silent:true});
-  renderDeckSelect();
-  statusText.textContent='已儲存雲端同步設定，並完成題庫清單同步檢查。';
+  statusText.textContent='已儲存 Apps Script URL 與 userKey。此操作不會同步題庫清單或學習進度。';
 });
 if(managerCollapseBtn){
   managerCollapseBtn.addEventListener('click', ()=>{
@@ -5251,11 +5119,10 @@ function hideSettingsPanel(){
   if(settingsPanel) settingsPanel.classList.add('screen-hidden');
   if(homeMainPanel) homeMainPanel.classList.remove('screen-hidden');
 }
-function showSettingsTab(tab='pending'){
-  const normalizedTab=['pending','deck','sync'].includes(tab) ? tab : 'pending';
+function showSettingsTab(tab='deck'){
+  const normalizedTab=['deck','sync'].includes(tab) ? tab : 'deck';
   settingsTabs().forEach(btn=>btn.classList.toggle('is-active', btn.dataset.settingsTab===normalizedTab));
   const sections=[
-    {key:'pending', el:document.querySelector('.pending-deck-section')},
     {key:'deck', el:document.getElementById('deckManagementSectionBody')?.closest('.manage-section') || deckSelect?.closest('.manage-section')},
     {key:'sync', el:document.getElementById('cloudSyncSectionBody')?.closest('.manage-section') || cloudScriptUrlInput?.closest('.manage-section')}
   ];
@@ -5301,7 +5168,7 @@ function handleAppTab(tab){
   if(tab==='settings'){
     showHomeScreen({keepSettings:true});
     setActiveAppTab('settings');
-    showSettingsPanel('pending');
+    showSettingsPanel('deck');
     window.scrollTo({top:0, behavior:'auto'});
   }
 }
@@ -5341,19 +5208,7 @@ function setupManagerSections(){
   if(!managerPanelBody || managerPanelBody.dataset.sectionsReady==='true') return;
   const deckSection=deckSelect?.closest('.manage-section');
   const cloudSection=cloudScriptUrlInput?.closest('.manage-section');
-  const pendingSection=pendingDeckSelect?.closest('.manage-section');
-  const pendingBox=pendingDeckSelect?.closest('.pending-deck-box');
-  if(!deckSection || !cloudSection || !pendingSection || !pendingBox) return;
-
-  pendingSection.dataset.settingsSection='pending';
-  pendingBox.id='pendingDeckSectionBody';
-  pendingBox.classList.add('section-body');
-  const pendingTitle=pendingBox.querySelector('.pending-deck-title');
-  if(pendingTitle) pendingTitle.remove();
-  if(!pendingSection.dataset.sectionReady){
-    pendingSection.prepend(createSectionHeader('未入庫題庫','來源：GitHub data/decks.json 與 data/*.csv。選擇後會加入目前題庫清單。','pendingDeckSectionBody'));
-    pendingSection.dataset.sectionReady='true';
-  }
+  if(!deckSection || !cloudSection) return;
 
   wrapManageSection(cloudSection,{
     title:'雲端同步',
@@ -5367,10 +5222,9 @@ function setupManagerSections(){
   });
   cloudSection.dataset.settingsSection='sync';
   deckSection.dataset.settingsSection='deck';
-  managerPanelBody.appendChild(pendingSection);
-  managerPanelBody.appendChild(cloudSection);
   managerPanelBody.appendChild(deckSection);
-  showSettingsTab('pending');
+  managerPanelBody.appendChild(cloudSection);
+  showSettingsTab('deck');
   managerPanelBody.dataset.sectionsReady='true';
 }
 function setSectionCollapsed(button,collapsed){
@@ -5473,7 +5327,6 @@ async function bootstrap(){
   loadDecks();
   renderDeckSelect();
   setupManagerSections();
-  refreshPendingDecks({silent:true}).catch(err=>console.warn('啟動時讀取題庫清單失敗；內建題庫仍會繼續載入。', err));
   updateCloudMetaText();
   setManagerPanelCollapsed(false);
   showHomeScreen();

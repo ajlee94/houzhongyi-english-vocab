@@ -15,4 +15,16 @@ __pycache__/
 output/debug_*/
 output/tmp_*/
 
+# Browser validation runtime profiles
+output/ui-validation-*/chrome-profile/
+output/ui-validation-*/cloud-config-profile*/
+output/ui-validation-*/codex-preview-cloud-profile/
+output/ui-validation-*/no-allow-profile/
+
+# Legacy deck manifest no longer used by the app
+data/decks.json
+output/github-pages/data/decks.json
+data/*.csv
+output/github-pages/data/*.csv
+
 # Keep Google Drive shortcuts and source PDFs tracked only when intentionally added.
