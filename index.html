@@ -3194,7 +3194,7 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
   <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="learningHelpModalTitle">
     <div class="modal-title" id="learningHelpModalTitle">學習規則</div>
     <div class="help-list">
-      <div class="help-item"><strong>新增新字</strong>按「增加新字 +5」會把新單字加入今日練習；每日新增上限 30，跨日自動歸零。</div>
+      <div class="help-item"><strong>新增新字</strong>按「增加新字 +5」會把新單字加入今日練習；每日新增上限 50，跨日自動歸零。</div>
       <div class="help-item"><strong>練習順序</strong>App 以題號分組，同題單字會一起練；每個單字累積 5 次後才算熟悉。</div>
       <div class="help-item"><strong>出題頻率</strong>已開放的新舊單字會輪流出現，困難、較新、較久沒練的單字會優先出現。</div>
       <div class="help-item"><strong>單字卡操作</strong>點卡片第一次顯示快速中文與範例，第二次顯示完整背面；「不熟悉 / 普通 / 很熟悉」會更新熟悉度。</div>
@@ -3249,7 +3249,7 @@ const RETIRED_BUILT_IN_DECK_KEYS=new Set([
   'data/113_cmu_english_vocab.csv'
 ]);
 const DEFAULT_DAILY_NEW_LIMIT=0;
-const MAX_DAILY_NEW_LIMIT=30;
+const MAX_DAILY_NEW_LIMIT=50;
 const DAILY_LIMIT_STEP=5;
 const REQUIRED_COUNT=5;
 const QUIZ_ROUND_LIMIT=10;
