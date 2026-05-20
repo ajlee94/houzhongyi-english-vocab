@@ -4247,8 +4247,16 @@ function parseCSV(text){
   const headers=rows[0].map(h=>String(h||'').replace(/^\uFEFF/,'').trim());
   return rows.slice(1).map((r,index)=>{ const obj={id:index+1}; headers.forEach((h,i)=>obj[h]=(r[i]||'').trim()); return obj; }).filter(item=>item['單字']);
 }
+function getWordIdSortValue(item){ return String(item?.['word_id'] || item?.id || '').trim(); }
+function compareWordIds(a,b){
+  const textA=getWordIdSortValue(a);
+  const textB=getWordIdSortValue(b);
+  const compared=textA.localeCompare(textB, undefined, {numeric:true, sensitivity:'base'});
+  return compared || ((Number(a?.id)||0) - (Number(b?.id)||0));
+}
+function sortWordsByWordId(items){ return [...(items||[])].sort(compareWordIds); }
 function detectQuestionKey(item){ return item['word_id'] || item['單字'] || item.id; }
-function buildGroups(){ const map=new Map(); for(const item of words){ const key=detectQuestionKey(item); if(!map.has(key)) map.set(key,[]); map.get(key).push(item);} groups=Array.from(map.entries()).map(([key,items])=>({key,items})); }
+function buildGroups(){ const map=new Map(); for(const item of words){ const key=detectQuestionKey(item); if(!map.has(key)) map.set(key,[]); map.get(key).push(item);} groups=Array.from(map.entries()).map(([key,items])=>({key,items:sortWordsByWordId(items)})).sort((a,b)=>compareWordIds(a.items[0], b.items[0])); }
 
 function getSourceRangeMax(value) {
   let text = String(value || '').trim();
@@ -4677,6 +4685,9 @@ function normalizeState(){
   if(!Array.isArray(state.completedGroups)) state.completedGroups=[];
   state.completedGroups = state.completedGroups.filter(key=>groups.some(g=>g.key===key));
   if(state.currentGroupIndex>=groups.length) state.currentGroupIndex=Math.max(0,groups.length-1);
+  const firstIncompleteGroupIndex = groups.findIndex(group=>!isGroupCompleted(group));
+  if(firstIncompleteGroupIndex === -1) state.currentGroupIndex = groups.length;
+  else state.currentGroupIndex = Math.min(Math.max(0, state.currentGroupIndex), firstIncompleteGroupIndex);
   if(!state.lastResetKey) state.lastResetKey=getLearningDateKey();
   if(!state.difficultMap || typeof state.difficultMap !== 'object') state.difficultMap = {};
   state.dailyLimit = getDailyLimitValue(state.dailyLimit);
@@ -4772,6 +4783,10 @@ function weightedPick(arr){
 function pickNextCard(){
   const unlockedWords = getUnlockedWords();
   if(!unlockedWords.length) return null;
+  const unseenNewWords = unlockedWords
+    .filter(item=>isTodayNewWord(item) && (state.counts[item.id]||0) === 0)
+    .sort(compareWordIds);
+  if(unseenNewWords.length) return unseenNewWords[0];
   return weightedPick(unlockedWords);
 }
 function updateHeaderUI(){
@@ -4911,7 +4926,7 @@ async function fetchDeckCsv(url){
   }
 }
 function clearCardUI(){ currentCard=null; words=[]; groups=[]; history=[]; historyIndex=-1; activeBrowseItems=[]; activeBrowseIndex=-1; quizItems=[]; quizCurrent=null; studySessionType='memorize'; if(cardProgressText) cardProgressText.textContent='0/0'; wordText.textContent='請先載入題庫'; frontPhoneticText.textContent=''; quickWordText.textContent='—'; quickMeaningText.textContent='—'; quickExampleText.textContent='—'; backWordText.textContent='—'; posText.textContent='—'; meaningText.textContent='—'; usageText.textContent='—'; wordFormText.textContent='—'; tenseText.textContent='—'; vingText.textContent='—'; collocationText.textContent='—'; relatedText.textContent='—'; synonymsText.textContent='—'; antonymsText.textContent='—'; exampleText.textContent='—'; if(wordListContainer) wordListContainer.innerHTML=''; if(wordListEmpty) wordListEmpty.classList.add('hidden'); if(quizView) quizView.classList.add('screen-hidden'); showStage(1); updateHeaderUI(); updateDifficultButtonUI(); updateStudyDeckTitle(); updateCardFooterNote(); }
-function startApp(items,sourceLabel=''){ words=items; if(!validateColumns(words)){ statusText.textContent='載入失敗：缺少必要欄位'; alert('CSV 至少需要包含：word_id、單字、定義'); return; } buildGroups(); loadState(); normalizeState(); maybeDailyReset(); const initialAddedCount=ensureInitialCardsAvailable(); saveWordsToStorage(); const estimatedQuestions=getEstimatedTotalQuestions(words); const gidNote=(currentDeckMeta?.type==='google_sheet' && currentDeckMeta?.url && !getGoogleSheetInfo(currentDeckMeta.url)?.hasExplicitGid) ? '；注意：目前網址未帶 gid，系統是用預設第一個工作表（gid=0）同步' : ''; statusText.textContent=`載入成功：共 ${words.length} 筆單字，估計 ${estimatedQuestions} 題${sourceLabel ? '（'+sourceLabel+'）' : ''}${gidNote}${initialAddedCount ? `；已自動加入 ${initialAddedCount} 個新字，可直接開始學習。` : '。請按「開始學習」進入模式選擇。'}`; history=[]; historyIndex=-1; activeBrowseItems=[]; activeBrowseIndex=-1; showNextGeneratedCard(); updateStudyDeckTitle(); updateCardFooterNote(); renderHomeDeckCards(); }
+function startApp(items,sourceLabel=''){ words=sortWordsByWordId(items); if(!validateColumns(words)){ statusText.textContent='載入失敗：缺少必要欄位'; alert('CSV 至少需要包含：word_id、單字、定義'); return; } buildGroups(); loadState(); normalizeState(); maybeDailyReset(); const initialAddedCount=ensureInitialCardsAvailable(); saveWordsToStorage(); const estimatedQuestions=getEstimatedTotalQuestions(words); const gidNote=(currentDeckMeta?.type==='google_sheet' && currentDeckMeta?.url && !getGoogleSheetInfo(currentDeckMeta.url)?.hasExplicitGid) ? '；注意：目前網址未帶 gid，系統是用預設第一個工作表（gid=0）同步' : ''; statusText.textContent=`載入成功：共 ${words.length} 筆單字，估計 ${estimatedQuestions} 題${sourceLabel ? '（'+sourceLabel+'）' : ''}${gidNote}${initialAddedCount ? `；已自動加入 ${initialAddedCount} 個新字，可直接開始學習。` : '。請按「開始學習」進入模式選擇。'}`; history=[]; historyIndex=-1; activeBrowseItems=[]; activeBrowseIndex=-1; showNextGeneratedCard(); updateStudyDeckTitle(); updateCardFooterNote(); renderHomeDeckCards(); }
 function upsertCurrentDeckMeta(){ if(!currentDeckMeta) return; const idx=decks.findIndex(d=>d.id===currentDeckMeta.id); if(idx>=0) decks[idx]={...decks[idx], ...currentDeckMeta}; else decks.push(currentDeckMeta); saveDecks({markUpdated:true, autoPush:true}); renderDeckSelect(); updateDeckMetaText(); }
 function getDeckById(id){ return decks.find(d=>d.id===id) || null; }
 function getDeckProgress(deck){
