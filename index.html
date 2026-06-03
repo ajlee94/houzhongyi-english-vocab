@@ -140,6 +140,9 @@ button,
 .quiz-summary-list li{background:#fffdf7;border:1px solid #f1d9aa;border-radius:14px;padding:10px 12px;font-weight:900}
 .quiz-summary-word{display:block}
 .quiz-summary-meaning{display:block;margin-top:5px;font-size:13px;line-height:1.5;opacity:.85}
+.quiz-summary-question{display:block;margin-top:5px;font-size:13px;line-height:1.5;font-weight:700;white-space:pre-wrap}
+.quiz-summary-answer{display:block;margin-top:5px;font-size:13px;line-height:1.5;opacity:.88}
+.quiz-summary-answer strong{font-weight:900}
 .word-list-panel{display:grid;gap:14px}
 .word-list-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .word-list-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -1837,7 +1840,7 @@ input[type="file"]{
   position:static;
   width:100%;
   display:grid;
-  grid-template-columns:repeat(5,1fr);
+  grid-template-columns:repeat(4,1fr);
   gap:0;
   margin:14px 0 0;
   padding:7px 10px;
@@ -2823,6 +2826,26 @@ body.theme-dark .quiz-choice-btn.is-wrong:hover{
   font-size:clamp(34px,9.5vw,48px);
   font-weight:600;
   line-height:1.12;
+  max-width:100%;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  text-wrap:balance;
+}
+.quiz-word.is-long{
+  font-size:clamp(24px,5.8vw,36px);
+  line-height:1.22;
+}
+.quiz-word.is-very-long,
+.quiz-word.is-context{
+  font-size:clamp(20px,4.8vw,30px);
+  line-height:1.28;
+}
+.quiz-word.is-context{
+  text-align:left;
+}
+.quiz-word.is-context.is-very-long{
+  font-size:clamp(18px,4.2vw,26px);
+  line-height:1.3;
 }
 .quiz-choice-grid{
   margin-top:16px;
@@ -2885,6 +2908,12 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
   width:min(calc(100% - 24px),var(--app-max));
   margin:0;
   transform:translateX(-50%);
+}
+.round-title{
+  color:var(--primary,#a9b8d8);
+  font-size:13px;
+  font-weight:700;
+  padding:6px 2px 0;
 }
 
 </style>
@@ -2971,15 +3000,15 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
 
         <div class="manage-section cloud-sync-section">
           <div class="manage-section-title">雲端同步</div>
-                    <div class="sync-help-note"><strong>同步說明</strong>新增或更新題庫時，題庫清單會依目前 Apps Script URL 與 userKey 自動同步到雲端。這裡的儲存按鈕只保存 Apps Script URL 與 userKey；不會修改題庫內容。</div>
+                    <div class="sync-help-note"><strong>同步說明</strong>題庫清單只保存在目前裝置；雲端只同步目前題庫的學習進度。題庫內容仍由 CSV / Google Sheets 網址提供。</div>
           <div class="deck-grid">
             <input id="cloudScriptUrlInput" type="text" placeholder="貼上 Google Apps Script Web App 網址" value="https://script.google.com/macros/s/AKfycbyhK5odtV6a13q3m0RHOA4gyMaW2Y9LS1RuOB26p34v7_bq2Jv0drGdbcuKWp10PwZe/exec" class="wide" />
             <input id="cloudUserKeyInput" type="text" placeholder="同步帳號代號（例如：lee_vocab）" value="aj_vocab" class="wide" />
-            <button id="saveCloudConfigBtn" class="btn-secondary">儲存 URL / userKey</button>
+            <button id="saveCloudConfigBtn" class="btn-secondary">儲存同步設定</button>
             <button id="pushCloudBtn" class="btn-secondary">上傳雲端進度</button>
             <button id="pullCloudBtn" class="btn-secondary">下載雲端進度</button>
-            <button id="resetBtn" class="btn-secondary">重設本機+雲端進度</button>
-            <button id="clearBtn" class="btn-secondary">清除本機快取</button>
+            <button id="resetBtn" class="btn-secondary">重設進度</button>
+            <button id="clearBtn" class="btn-secondary">清除本機資料</button>
             <button id="exportProgressBtn" class="btn-secondary">匯出進度</button>
             <button id="importProgressBtn" class="btn-secondary">匯入進度</button>
             <input type="file" id="progressFile" accept=".json,application/json" class="hidden-input" />
@@ -3005,8 +3034,8 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
         <div class="study-mode-section-title">學習模式</div>
         <div class="study-mode-grid">
           <button id="memorizeModeBtn" class="study-mode-btn" type="button">
-            <strong>背誦單字卡</strong>
-            <span>沿用目前的背誦流程，依新字池與已學單字的規則抽題複習。</span>
+            <strong>三輪背誦卡</strong>
+            <span>依新字池與舊字規則抽題；先猜英文，再看核心意思與搭配，最後看例句、同反義與字族。</span>
           </button>
           <button id="deckWordModeBtn" class="study-mode-btn" type="button">
             <strong>題庫單字卡</strong>
@@ -3015,15 +3044,6 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
           <button id="difficultWordModeBtn" class="study-mode-btn" type="button">
             <strong>困難單字卡</strong>
             <span>只列出有標記困難的單字；點入後可逐張查看與調整困難標記。</span>
-          </button>
-        </div>
-      </div>
-      <div class="study-mode-section">
-        <div class="study-mode-section-title">測驗模式</div>
-        <div class="study-mode-grid quiz-mode-grid">
-          <button id="quizModeBtn" class="study-mode-btn" type="button">
-            <strong>單字測驗</strong>
-            <span>以答題方式檢查單字記憶，可選擇今日新字、困難字、已學單字或全部題庫。</span>
           </button>
         </div>
       </div>
@@ -3049,6 +3069,10 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
           <select id="quizTypeSelect">
             <option value="en_to_zh">英文選中文</option>
             <option value="zh_to_en">中文選英文</option>
+            <option value="collocation">常見搭配</option>
+            <option value="synonym">同義字</option>
+            <option value="antonym">反義字</option>
+            <option value="context">文章語境選字</option>
             <option value="spelling">拼字</option>
           </select>
         </div>
@@ -3064,7 +3088,7 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
         </div>
         <div class="quiz-summary screen-hidden" id="quizSummaryView">
           <div class="quiz-summary-score" id="quizSummaryScoreText">0 / 0</div>
-          <div class="quiz-summary-title">答錯的英文單字</div>
+          <div class="quiz-summary-title">答錯的題目</div>
           <ul class="quiz-summary-list" id="quizWrongList"></ul>
         </div>
         <div class="quiz-result" id="quizResultText"></div>
@@ -3108,7 +3132,7 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
               <button class="familiarity-btn" type="button" data-familiarity="normal">普通</button>
               <button class="familiarity-btn is-good" type="button" data-familiarity="good">很熟悉</button>
             </div>
-            <div class="hint">點卡片一次看中文與範例，再點一次看完整背面</div>
+            <div class="hint">先猜中文；點一次看第一輪核心，再點一次看第二輪與第三輪資料</div>
           </div>
 
           <div class="card-face quick-face-layout hidden" id="quickFace">
@@ -3120,14 +3144,18 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
                   <button class="speak" id="speakQuickWordBtn">🔊</button>
                 </div>
                 <div class="quick-block">
+                  <div class="quick-label">詞性</div>
+                  <div class="quick-value" id="quickPosText">—</div>
+                </div>
+                <div class="quick-block">
                   <div class="quick-label">中文意思</div>
                   <div class="quick-value" id="quickMeaningText">—</div>
                 </div>
                 <div class="quick-block">
-                  <div class="quick-label">範例</div>
+                  <div class="quick-label">常見搭配/用法</div>
                   <div class="example-row">
-                    <div class="quick-value" id="quickExampleText">—</div>
-                    <button class="speak" id="speakQuickExampleBtn">🔊</button>
+                    <div class="quick-value" id="quickUsageText">—</div>
+                    <button class="speak" id="speakQuickUsageBtn">🔊</button>
                   </div>
                 </div>
               </div>
@@ -3154,18 +3182,20 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
             </div>
             <div class="back-scroll">
               <div class="back-inner">
+                <div class="round-title">第一輪核心</div>
                 <div class="field"><div class="label">詞性</div><div class="value" id="posText">—</div></div>
                 <div class="field"><div class="label">定義</div><div class="value" id="meaningText">—</div></div>
-                
+                <div class="field"><div class="label">常見搭配</div><div class="value" id="collocationText">—</div></div>
                 <div class="field"><div class="label">用法</div><div class="value" id="usageText">—</div></div>
+                <div class="round-title">第二輪：閱讀與選項判斷</div>
                 <div class="field"><div class="label">範例</div><div class="example-row"><div class="value" id="exampleText">—</div><button class="speak" id="speakExampleBtn">🔊</button></div></div>
+                <div class="field"><div class="label">同義字</div><div class="value" id="synonymsText">—</div></div>
+                <div class="field"><div class="label">反義字</div><div class="value" id="antonymsText">—</div></div>
+                <div class="round-title">第三輪：字族與型態變化</div>
+                <div class="field"><div class="label">相關字</div><div class="value" id="relatedText">—</div></div>
                 <div class="field"><div class="label">詞性變化</div><div class="value" id="wordFormText">—</div></div>
                 <div class="field"><div class="label">三態</div><div class="value" id="tenseText">—</div></div>
                 <div class="field"><div class="label">現在分詞</div><div class="value" id="vingText">—</div></div>
-                <div class="field"><div class="label">常見搭配</div><div class="value" id="collocationText">—</div></div>
-                <div class="field"><div class="label">相關字</div><div class="value" id="relatedText">—</div></div>
-                <div class="field"><div class="label">同義字</div><div class="value" id="synonymsText">—</div></div>
-                <div class="field"><div class="label">反義字</div><div class="value" id="antonymsText">—</div></div>
               </div>
             </div>
             <div class="familiarity-row back-familiarity-row">
@@ -3177,7 +3207,7 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
         </div>
       </div>
 
-      <div class="footer-note" id="cardFooterNote">按右箭頭或「已讀」都會直接進到下一個單字的正面。點卡片本體時會從第 1 層進第 2 層，再進第 3 層；在第 3 層再點一次，會直接前進到下一個單字。</div>
+      <div class="footer-note" id="cardFooterNote">按右箭頭或「已讀」都會直接進到下一個單字的正面。點卡片本體時會先揭露第一輪核心，再揭露第二輪與第三輪資料；在第 3 層再點一次，會直接前進到下一個單字。</div>
     </div>
     </div>
   </div>
@@ -3185,7 +3215,6 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
     <button class="app-tab-btn is-active" type="button" data-app-tab="home"><span class="app-tab-icon">⌂</span><span>首頁</span></button>
     <button class="app-tab-btn" type="button" data-app-tab="study"><span class="app-tab-icon">□</span><span>學習</span></button>
     <button class="app-tab-btn" type="button" data-app-tab="quiz"><span class="app-tab-icon">✓</span><span>測驗</span></button>
-    <button class="app-tab-btn" type="button" data-app-tab="deck"><span class="app-tab-icon">▤</span><span>題庫</span></button>
     <button class="app-tab-btn" type="button" data-app-tab="settings"><span class="app-tab-icon">⚙</span><span>設定</span></button>
   </nav>
 </div>
@@ -3194,10 +3223,10 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
   <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="learningHelpModalTitle">
     <div class="modal-title" id="learningHelpModalTitle">學習規則</div>
     <div class="help-list">
-      <div class="help-item"><strong>新增新字</strong>按「增加新字 +5」會把新單字加入今日練習；每日新增上限 50，跨日自動歸零。</div>
+      <div class="help-item"><strong>新增新字</strong>按「增加新字 +5」會把新單字分批開放進新字池；每日新增額度上限 50，跨日只重置新增額度，不清空尚未完成的新字池。</div>
       <div class="help-item"><strong>練習順序</strong>App 以題號分組，同題單字會一起練；每個單字累積 5 次後才算熟悉。</div>
       <div class="help-item"><strong>出題頻率</strong>已開放的新舊單字會輪流出現，困難、較新、較久沒練的單字會優先出現。</div>
-      <div class="help-item"><strong>單字卡操作</strong>點卡片第一次顯示快速中文與範例，第二次顯示完整背面；「不熟悉 / 普通 / 很熟悉」會更新熟悉度。</div>
+      <div class="help-item"><strong>單字卡操作</strong>正面先猜意思；點第一次顯示第一輪核心欄位，點第二次顯示例句、同反義與字族資料；「不熟悉 / 普通 / 很熟悉」會更新熟悉度。</div>
     </div>
     <div class="modal-close-row">
       <button id="closeLearningHelpBtn" class="btn-secondary" type="button">關閉</button>
@@ -3215,8 +3244,10 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
       <div class="help-item"><strong>載入題庫</strong>載入目前選到的題庫。若本機已有快取，會先載入快取。</div>
       <div class="help-item"><strong>重新同步</strong>重新從原本的 Google Sheets 或 CSV 網址抓最新題庫資料。</div>
             <div class="help-item"><strong>增加新字 +5</strong>每次最多新增 5 個單字；會同時受「今日剩餘額度」與「新字池剩餘空位」限制。</div>
-      <div class="help-item"><strong>重設學習進度</strong>重設目前題庫的學習進度；若已設定雲端同步，會一併覆蓋雲端進度。</div>
-      <div class="help-item"><strong>清除本機快取</strong>清除目前題庫存在本機的題庫快取與進度，之後會重新從題庫網址同步。</div>
+      <div class="help-item"><strong>儲存同步設定</strong>保存 Apps Script URL 與同步代號；不會修改題庫清單或題庫內容。</div>
+      <div class="help-item"><strong>上傳 / 下載雲端進度</strong>只同步目前已載入題庫的學習進度。</div>
+      <div class="help-item"><strong>重設進度</strong>重設目前題庫的學習進度；若同步設定可用，會覆蓋雲端進度。</div>
+      <div class="help-item"><strong>清除本機資料</strong>清除目前題庫存在本機的題庫快取與進度，雲端進度不會被刪除。</div>
       <div class="help-item"><strong>匯出進度</strong>把目前題庫的進度匯出成 JSON 備份檔。</div>
       <div class="help-item"><strong>匯入進度</strong>把先前匯出的 JSON 備份匯回目前題庫。</div>
       <div class="help-item"><strong>開始學習</strong>先進入學習模式選擇，再決定要用背誦單字卡、題庫單字卡或困難單字卡。</div>
@@ -3231,7 +3262,6 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
 
 <script>
 const APP_DECKS_INDEX_KEY='flashcard_decks_index_v1';
-const APP_DECKS_META_KEY='flashcard_decks_meta_v1';
 const ACTIVE_DECK_ID_KEY='flashcard_active_deck_id_v1';
 const CLOUD_SYNC_CONFIG_KEY='flashcard_cloud_sync_config_v1';
 const THEME_PREF_KEY='flashcard_theme_pref_v1';
@@ -3239,8 +3269,7 @@ const APP_PUBLIC_BASE_URL='https://ajlee94.github.io/houzhongyi-english-vocab/';
 const CLOUD_SYNC_DISABLED=false;
 const DEFAULT_CLOUD_SCRIPT_URL='https://script.google.com/macros/s/AKfycbyhK5odtV6a13q3m0RHOA4gyMaW2Y9LS1RuOB26p34v7_bq2Jv0drGdbcuKWp10PwZe/exec';
 const DEFAULT_CLOUD_USER_KEY='aj_vocab';
-const BUILT_IN_DECKS=[];
-const RETIRED_BUILT_IN_DECK_KEYS=new Set([
+const RETIRED_DECK_KEYS=new Set([
   'builtin_cmu_114',
   'data/114_cmu_english_vocab.csv',
   'builtin_cmu_112',
@@ -3275,9 +3304,9 @@ const card=el('card'), frontFace=el('frontFace'), quickFace=el('quickFace'), bac
 const prevBtns=()=>document.querySelectorAll('#prevBtn, #prevBtnQuick, #prevBtnBack');
 const nextBtns=()=>document.querySelectorAll('#nextBtn, #nextBtnQuick, #nextBtnBack');
 const wordText=el('wordText'), frontPhoneticText=el('frontPhoneticText');
-const quickWordText=el('quickWordText'), quickMeaningText=el('quickMeaningText'), quickExampleText=el('quickExampleText');
+const quickWordText=el('quickWordText'), quickPosText=el('quickPosText'), quickMeaningText=el('quickMeaningText'), quickUsageText=el('quickUsageText');
 const backWordText=el('backWordText');
-const speakWordBtn=el('speakWordBtn'), speakQuickWordBtn=el('speakQuickWordBtn'), speakQuickExampleBtn=el('speakQuickExampleBtn'), speakWordBtnBack=el('speakWordBtnBack'), speakExampleBtn=el('speakExampleBtn');
+const speakWordBtn=el('speakWordBtn'), speakQuickWordBtn=el('speakQuickWordBtn'), speakQuickUsageBtn=el('speakQuickUsageBtn'), speakWordBtnBack=el('speakWordBtnBack'), speakExampleBtn=el('speakExampleBtn');
 const posText=el('posText'), meaningText=el('meaningText'), usageText=el('usageText'), wordFormText=el('wordFormText'), tenseText=el('tenseText'), vingText=el('vingText'), collocationText=el('collocationText'), relatedText=el('relatedText'), synonymsText=el('synonymsText'), antonymsText=el('antonymsText'), exampleText=el('exampleText');
 const cardProgressText=el('cardProgressText');
 const studyModeView=el('studyModeView'), wordListView=el('wordListView'), cardView=el('cardView');
@@ -3291,9 +3320,6 @@ let cloudAutoSyncTimer=null;
 let cloudAutoSyncInFlight=false;
 let cloudAutoSyncQueued=false;
 let deckLoadRequestSeq=0;
-let cloudDeckIndexSyncTimer=null;
-let cloudDeckIndexSyncInFlight=false;
-let cloudDeckIndexSyncQueued=false;
 
 let words=[], groups=[], currentCard=null, history=[], historyIndex=-1, cardStage=1;
 let studySessionType='memorize';
@@ -3301,7 +3327,6 @@ let quizScope='today', quizType='en_to_zh', quizItems=[], quizChoices=[], quizCu
 let activeBrowseItems=[];
 let activeBrowseIndex=-1;
 let decks=[];
-let deckRegistryMeta=defaultDeckRegistryMeta();
 let currentDeckId='';
 let currentDeckMeta=null;
 let state=defaultState();
@@ -3314,159 +3339,52 @@ function getActiveNewPoolCount(){ return Array.isArray(state?.dailyNewIds) ? sta
 function getDailyRemainingQuota(){ return Math.max(0, getDailyCap() - getTodayAddedCount()); }
 function getNewPoolRemainingQuota(){ return Math.max(0, getDailyCap() - getActiveNewPoolCount()); }
 function getAddableNewWordCount(){ return Math.max(0, Math.min(getDailyRemainingQuota(), getNewPoolRemainingQuota())); }
-function defaultDeckRegistryMeta(){ return {updatedAt:''}; }
 function defaultCloudConfig(){ return {scriptUrl:DEFAULT_CLOUD_SCRIPT_URL, userKey:DEFAULT_CLOUD_USER_KEY, lastPushAt:'', lastPullAt:''}; }
 function defaultSyncMeta(){ return {dirty:false,autoPushBlocked:false,blockReason:''}; }
 function currentDeckDataKey(){ return currentDeckId ? `deck_data_${currentDeckId}` : ''; }
 function currentDeckSyncMetaKey(){ return currentDeckId ? `deck_sync_meta_${currentDeckId}` : ''; }
 
-function loadDeckRegistryMeta(){
-  try{
-    const raw=localStorage.getItem(APP_DECKS_META_KEY);
-    if(!raw) return defaultDeckRegistryMeta();
-    const parsed=JSON.parse(raw);
-    return {updatedAt:String(parsed?.updatedAt||'').trim()};
-  }catch(e){
-    return defaultDeckRegistryMeta();
-  }
+function isRetiredDeck(deck){
+  const keys=[
+    String(deck?.id||'').trim(),
+    String(deck?.cloudDeckKey||'').trim(),
+    String(deck?.normalizedUrl||'').trim(),
+    String(deck?.url||'').trim()
+  ].filter(Boolean);
+  return keys.some(key=>RETIRED_DECK_KEYS.has(key));
 }
-function saveDeckRegistryMeta(){
-  localStorage.setItem(APP_DECKS_META_KEY, JSON.stringify(deckRegistryMeta||defaultDeckRegistryMeta()));
+function normalizeDeckList(list){
+  const seen=new Set();
+  const normalized=[];
+  (Array.isArray(list)?list:[]).forEach(deck=>{
+    const item=normalizeDeckMeta(deck);
+    if(!item || isRetiredDeck(item)) return;
+    const key=String(item.cloudDeckKey || item.normalizedUrl || item.url || item.id || '').trim();
+    if(!key || seen.has(key)) return;
+    seen.add(key);
+    normalized.push(item);
+  });
+  return normalized;
 }
-function getDeckRegistryUpdatedTime(source=deckRegistryMeta){
-  const candidates=[source?.updatedAt, source?.payload?.updatedAt];
-  for(const value of candidates){
-    const ts=Date.parse(String(value||''));
-    if(Number.isFinite(ts)) return ts;
-  }
-  return 0;
-}
-function sanitizeDeckMetaForCloud(deck){
-  const normalized=normalizeDeckMeta(deck);
-  if(!normalized) return null;
-  return {
-    id:String(normalized.id||'').trim(),
-    name:String(normalized.name||'').trim(),
-    url:String(normalized.url||'').trim(),
-    normalizedUrl:String(normalized.normalizedUrl||'').trim(),
-    type:String(normalized.type||'').trim(),
-    cloudDeckKey:String(normalized.cloudDeckKey||'').trim(),
-    createdAt:String(normalized.createdAt||'').trim(),
-    updatedAt:String(normalized.updatedAt||'').trim(),
-    lastSyncedAt:String(normalized.lastSyncedAt||'').trim(),
-    totalWords:Number(normalized.totalWords)||0,
-    totalGroups:Number(normalized.totalGroups)||0
-  };
-}
-function getDeckMergeKey(deck){
-  const normalized=normalizeDeckMeta(deck);
-  if(!normalized) return '';
-  return String(normalized.cloudDeckKey || normalized.normalizedUrl || normalized.url || normalized.id || '').trim();
-}
-function getDeckUpdatedTime(deck){
-  const normalized=normalizeDeckMeta(deck);
-  const candidates=[normalized?.updatedAt, normalized?.lastSyncedAt, normalized?.createdAt];
-  for(const value of candidates){
-    const ts=Date.parse(String(value||''));
-    if(Number.isFinite(ts)) return ts;
-  }
-  return 0;
-}
-function mergeDeckMeta(existing,incoming){
-  const current=normalizeDeckMeta(existing);
-  const next=normalizeDeckMeta(incoming);
-  if(!current) return next;
-  if(!next) return current;
-  const currentTime=getDeckUpdatedTime(current);
-  const nextTime=getDeckUpdatedTime(next);
-  const newer=nextTime >= currentTime ? next : current;
-  const older=nextTime >= currentTime ? current : next;
-  const merged=normalizeDeckMeta({...older, ...newer});
-  if(current.id) merged.id=current.id;
-  if(!merged.createdAt && current.createdAt) merged.createdAt=current.createdAt;
-  if(!merged.lastSyncedAt && current.lastSyncedAt) merged.lastSyncedAt=current.lastSyncedAt;
-  return merged;
-}
-function mergeDeckLists(localList,remoteList){
-  const merged=[];
-  const positions=new Map();
-  const addDeck=deck=>{
-    const normalized=normalizeDeckMeta(deck);
-    const key=getDeckMergeKey(normalized);
-    if(!normalized || !key) return;
-    if(positions.has(key)){
-      const index=positions.get(key);
-      merged[index]=mergeDeckMeta(merged[index], normalized);
-    }else{
-      positions.set(key, merged.length);
-      merged.push(normalized);
-    }
-  };
-  (Array.isArray(localList)?localList:[]).forEach(addDeck);
-  (Array.isArray(remoteList)?remoteList:[]).forEach(addDeck);
-  return merged;
-}
-function deckListSignature(list){
-  return JSON.stringify((Array.isArray(list)?list:[])
-    .map(sanitizeDeckMetaForCloud)
-    .filter(Boolean)
-    .map(deck=>({...deck, id:''}))
-    .sort((a,b)=>getDeckMergeKey(a).localeCompare(getDeckMergeKey(b))));
-}
-function buildDeckIndexPayload(){
-  const updatedAt=String(deckRegistryMeta?.updatedAt||'').trim() || new Date().toISOString();
-  if(!deckRegistryMeta?.updatedAt) deckRegistryMeta={updatedAt};
-  return {
-    version:1,
-    updatedAt,
-    decks:(Array.isArray(decks)?decks:[]).map(sanitizeDeckMetaForCloud).filter(Boolean)
-  };
-}
-function persistDeckRegistryLocal({markUpdated=false, autoPush=true}={}){
-  decks=(Array.isArray(decks)?decks:[]).map(normalizeDeckMeta).filter(Boolean);
-  if(markUpdated) deckRegistryMeta.updatedAt=new Date().toISOString();
+function saveDecks(){
+  decks=normalizeDeckList(decks);
   localStorage.setItem(APP_DECKS_INDEX_KEY, JSON.stringify(decks));
-  saveDeckRegistryMeta();
-  if(autoPush && hasCloudDeckIndexConfig()) scheduleCloudDeckIndexAutoPush();
 }
-function hasCloudDeckIndexConfig(){
-  if(CLOUD_SYNC_DISABLED) return false;
-  const scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
-  const userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
-  return !!(scriptUrl && userKey);
-}
-function applyCloudDeckIndexToLocal(payload,{autoPush=false}={}){
-  const incomingDecks=Array.isArray(payload?.decks)?payload.decks:[];
-  decks=mergeDeckLists(decks, incomingDecks);
-  deckRegistryMeta={updatedAt:String(payload?.updatedAt||'').trim()};
-  persistDeckRegistryLocal({markUpdated:false, autoPush});
-  ensureBuiltInDecks({markUpdated:true, autoPush:false});
-  renderDeckSelect();
-  const selectedDeck=getDeckById(currentDeckId);
-  if(selectedDeck){
-    currentDeckMeta=normalizeDeckMeta(selectedDeck);
-  }else if(currentDeckId){
-    currentDeckId='';
-    currentDeckMeta=null;
-    syncMeta=defaultSyncMeta();
-    saveActiveDeckId();
-    clearCardUI();
+function loadDecks(){
+  try{
+    const raw=localStorage.getItem(APP_DECKS_INDEX_KEY);
+    const parsed=raw ? JSON.parse(raw) : [];
+    decks=normalizeDeckList(parsed);
+    if(raw !== JSON.stringify(decks)) saveDecks();
+  }catch(e){
+    decks=[];
+    saveDecks();
   }
-  updateDeckMetaText();
-  updateCloudMetaText();
 }
 async function loadSingleDeckIfIdle(){
   if(currentDeckId || words.length || !Array.isArray(decks) || decks.length!==1) return false;
   await loadDeckById(decks[0].id);
   return true;
-}
-function scheduleCloudDeckIndexAutoPush(){
-  if(!hasCloudDeckIndexConfig()) return;
-  if(cloudDeckIndexSyncTimer) clearTimeout(cloudDeckIndexSyncTimer);
-  cloudDeckIndexSyncTimer=setTimeout(()=>{
-    cloudDeckIndexSyncTimer=null;
-    pushCloudDeckIndexSilent();
-  }, 900);
 }
 
 function loadCloudConfig(){
@@ -3632,40 +3550,6 @@ function normalizeDeckMeta(deck){
     totalWords:Number(deck.totalWords)||0,
     totalGroups:Number(deck.totalGroups)||0
   };
-}
-function ensureBuiltInDecks({markUpdated=false, autoPush=false}={}){
-  if(!Array.isArray(decks)) decks=[];
-  const beforePruneLength=decks.length;
-  decks=decks.filter(deck=>{
-    const keys=[
-      String(deck?.id||'').trim(),
-      String(deck?.cloudDeckKey||'').trim(),
-      String(deck?.normalizedUrl||'').trim(),
-      String(deck?.url||'').trim()
-    ].filter(Boolean);
-    return !keys.some(key=>RETIRED_BUILT_IN_DECK_KEYS.has(key));
-  });
-  const existingKeys=new Set(decks.map(deck=>String(deck?.cloudDeckKey || deck?.normalizedUrl || deck?.url || deck?.id || '').trim()).filter(Boolean));
-  let changed=decks.length!==beforePruneLength;
-  BUILT_IN_DECKS.forEach(deck=>{
-    const key=String(deck.cloudDeckKey || deck.url || deck.id).trim();
-    const id=String(deck.id||'').trim();
-    const existingIndex=decks.findIndex(existing=>String(existing?.id||'')===id || String(existing?.cloudDeckKey||existing?.normalizedUrl||existing?.url||'').trim()===key);
-    if(existingIndex>=0){
-      const current=normalizeDeckMeta(decks[existingIndex]);
-      const next=normalizeDeckMeta({...current, ...deck, lastSyncedAt:current?.lastSyncedAt||deck.lastSyncedAt, totalWords:current?.totalWords||deck.totalWords, totalGroups:current?.totalGroups||deck.totalGroups});
-      if(JSON.stringify(current)!==JSON.stringify(next)){
-        decks[existingIndex]=next;
-        changed=true;
-      }
-    }else if(!existingKeys.has(key)){
-      decks.push(normalizeDeckMeta(deck));
-      existingKeys.add(key);
-      changed=true;
-    }
-  });
-  if(changed) persistDeckRegistryLocal({markUpdated, autoPush});
-  return changed;
 }
 function getCloudDeckKey(){
   if(!currentDeckMeta) return '';
@@ -3839,163 +3723,6 @@ async function pushCloudProgress(){
   }catch(err){
     statusText.textContent=`雲端上傳失敗：${err?.message || err}`;
     alert(`雲端上傳失敗：${err?.message || err}`);
-  }
-}
-
-
-async function fetchCloudDeckIndex(){
-  const scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
-  const userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
-  if(!scriptUrl || !userKey) return null;
-  const url=`${scriptUrl}?action=loadDeckIndex&userKey=${encodeURIComponent(userKey)}`;
-  const result=await cloudJsonp(url);
-  if(!result || result.ok!==true || !result.payload) return null;
-  return result.payload;
-}
-async function verifyCloudDeckIndexSave(payload){
-  const verifyUrl=`${cloudConfig.scriptUrl}?action=loadDeckIndex&userKey=${encodeURIComponent(payload.userKey)}`;
-  const started=Date.now();
-  const localUpdatedAt=String(payload?.index?.updatedAt||'').trim();
-  let lastError='';
-  let attempts=0;
-  await new Promise(r=>setTimeout(r, 1200));
-  while(Date.now()-started < 20000){
-    attempts += 1;
-    try{
-      const result=await cloudJsonp(verifyUrl);
-      const remoteUpdatedAt=String(result?.payload?.updatedAt||'').trim();
-      if(result && result.ok===true && result.payload){
-        if(!localUpdatedAt || remoteUpdatedAt===localUpdatedAt){
-          return result;
-        }
-        lastError='雲端題庫清單尚未更新到最新版本';
-      }else{
-        lastError=result?.message || '雲端尚未讀到剛上傳的題庫清單';
-      }
-    }catch(err){
-      lastError=err?.message || String(err);
-    }
-    const waitMs = attempts <= 2 ? 1200 : attempts <= 5 ? 1800 : 2600;
-    await new Promise(r=>setTimeout(r, waitMs));
-  }
-  throw new Error(lastError || '雲端題庫清單寫入後驗證失敗');
-}
-async function postCloudDeckIndexSave(payload){
-  let lastError=null;
-  for(let attempt=1; attempt<=2; attempt++){
-    try{
-      await submitCloudPostForm('saveDeckIndex', payload);
-      const verified = await verifyCloudDeckIndexSave(payload);
-      if(attempt > 1 && verified && typeof verified === 'object') verified.retried = true;
-      return verified;
-    }catch(err){
-      lastError=err;
-      const message=String(err?.message||err||'');
-      const shouldRetry = attempt===1 && /尚未更新|尚未讀到|驗證失敗|同步逾時/.test(message);
-      if(!shouldRetry) throw err;
-      await new Promise(r=>setTimeout(r, 1000));
-    }
-  }
-  throw lastError || new Error('雲端題庫清單寫入後驗證失敗');
-}
-async function pushCloudDeckIndex(){
-  if(!hasCloudDeckIndexConfig()){
-    alert('請先儲存雲端同步設定。');
-    return false;
-  }
-  cloudConfig.scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
-  cloudConfig.userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
-  saveCloudConfig();
-  try{
-    await postCloudDeckIndexSave({
-      userKey: cloudConfig.userKey,
-      index: buildDeckIndexPayload()
-    });
-    return true;
-  }catch(err){
-    console.error('題庫清單上傳失敗', err);
-    return false;
-  }
-}
-async function pushCloudDeckIndexSilent(){
-  if(!hasCloudDeckIndexConfig()) return false;
-  if(cloudDeckIndexSyncInFlight){
-    cloudDeckIndexSyncQueued=true;
-    return false;
-  }
-  cloudDeckIndexSyncInFlight=true;
-  try{
-    cloudConfig.scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
-    cloudConfig.userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
-    saveCloudConfig();
-    await postCloudDeckIndexSave({
-      userKey: cloudConfig.userKey,
-      index: buildDeckIndexPayload()
-    });
-    return true;
-  }catch(err){
-    console.error('自動同步題庫清單失敗', err);
-    return false;
-  }finally{
-    cloudDeckIndexSyncInFlight=false;
-    if(cloudDeckIndexSyncQueued){
-      cloudDeckIndexSyncQueued=false;
-      scheduleCloudDeckIndexAutoPush();
-    }
-  }
-}
-async function reconcileCloudDeckIndex({silent=true, autoLoadSingle=false}={}){
-  if(!hasCloudDeckIndexConfig()) return false;
-  try{
-    const remoteIndex=await fetchCloudDeckIndex();
-    const remoteDecks=Array.isArray(remoteIndex?.decks)?remoteIndex.decks:[];
-    const localDecks=Array.isArray(decks)?decks:[];
-    const remoteHas=remoteDecks.length>0;
-    const localHas=localDecks.length>0;
-    const remoteTs=getDeckRegistryUpdatedTime(remoteIndex);
-    const localTs=getDeckRegistryUpdatedTime(deckRegistryMeta);
-    const mergedDecks=mergeDeckLists(localDecks, remoteDecks);
-    const mergedSignature=deckListSignature(mergedDecks);
-    const localSignature=deckListSignature(localDecks);
-    const remoteSignature=deckListSignature(remoteDecks);
-    const localNeedsUpdate=mergedSignature!==localSignature || (remoteHas && remoteTs > localTs);
-    const remoteNeedsUpdate=mergedSignature!==remoteSignature || (localHas && localTs > remoteTs);
-    let changed=false;
-
-    if(localNeedsUpdate){
-      decks=mergedDecks;
-      deckRegistryMeta={updatedAt:remoteNeedsUpdate ? new Date().toISOString() : String(remoteIndex?.updatedAt || deckRegistryMeta?.updatedAt || new Date().toISOString()).trim()};
-      persistDeckRegistryLocal({markUpdated:false, autoPush:false});
-      renderDeckSelect();
-      updateDeckMetaText();
-      updateCloudMetaText();
-      changed=true;
-    }
-
-    if(remoteNeedsUpdate){
-      if(!localNeedsUpdate){
-        decks=mergedDecks;
-        deckRegistryMeta={updatedAt:new Date().toISOString()};
-        persistDeckRegistryLocal({markUpdated:false, autoPush:false});
-      }
-      await pushCloudDeckIndexSilent();
-      if(!silent) statusText.textContent=localNeedsUpdate ? '已合併並同步題庫清單。' : '已同步本機題庫清單到雲端。';
-      changed=true;
-    }else if(localNeedsUpdate && !silent){
-      statusText.textContent='已同步雲端題庫清單。';
-    }
-
-    if(autoLoadSingle) await loadSingleDeckIfIdle();
-    if(!changed && remoteHas && localHas && remoteTs === localTs){
-      applyCloudDeckIndexToLocal(remoteIndex,{autoPush:false});
-      if(autoLoadSingle) await loadSingleDeckIfIdle();
-      return true;
-    }
-    return changed;
-  }catch(err){
-    console.warn('同步題庫清單失敗', err);
-    if(!silent) statusText.textContent=`題庫清單同步失敗：${err?.message || err}`;
-    return false;
   }
 }
 
@@ -4334,8 +4061,6 @@ function getLearningDateKey(now=new Date()){ const d=new Date(now); const parts=
 function setManagerPanelCollapsed(collapsed){ if(!managerPanelBody || !managerCollapseBtn) return; managerPanelBody.classList.toggle('hidden', !!collapsed); managerCollapseBtn.textContent = collapsed ? '展開' : '收合'; managerCollapseBtn.setAttribute('aria-expanded', String(!collapsed)); }
 function getDailyLimitValue(value=state.dailyLimit){ const num=Number(value); return Number.isFinite(num) ? Math.max(0, Math.min(MAX_DAILY_NEW_LIMIT, num)) : DEFAULT_DAILY_NEW_LIMIT; }
 function roundUpToDailyStep(value){ const num=Number(value); if(!Number.isFinite(num) || num<=0) return 0; return Math.min(MAX_DAILY_NEW_LIMIT, Math.max(0, Math.floor(num))); }
-function saveDecks({markUpdated=true, autoPush=true}={}){ persistDeckRegistryLocal({markUpdated, autoPush}); }
-function loadDecks(){ try{ const raw=localStorage.getItem(APP_DECKS_INDEX_KEY); decks = raw ? JSON.parse(raw) : []; if(!Array.isArray(decks)) decks=[]; decks=decks.map(normalizeDeckMeta).filter(Boolean); deckRegistryMeta=loadDeckRegistryMeta(); if(!deckRegistryMeta?.updatedAt && decks.length){ deckRegistryMeta.updatedAt=new Date().toISOString(); } persistDeckRegistryLocal({markUpdated:false, autoPush:false}); ensureBuiltInDecks({markUpdated:!raw, autoPush:false}); }catch(e){ decks=[]; deckRegistryMeta=loadDeckRegistryMeta(); ensureBuiltInDecks({markUpdated:true, autoPush:false}); } }
 function updateStudyDeckTitle(){ studyDeckTitle.textContent=`目前題庫：${currentDeckMeta?.name || '—'}`; }
 function isBrowseMode(){ return studySessionType==='browse_all' || studySessionType==='browse_difficult'; }
 function getBrowseModeLabel(mode=studySessionType){ return mode==='browse_difficult' ? '困難單字卡' : '題庫單字卡'; }
@@ -4345,14 +4070,14 @@ function updateStudySubtitleText(view='mode'){
   if(view==='mode') studySubtitle.textContent='請先選擇這次要使用的學習模式';
   else if(view==='list') studySubtitle.textContent=`目前模式：${getBrowseModeLabel()}。點選任一單字後，可進入三層單字卡。`;
   else if(view==='card' && isBrowseMode()) studySubtitle.textContent=`目前模式：${getBrowseModeLabel()}。在第 3 層再點一次，會回到單字總覽。`;
-  else if(view==='quiz') studySubtitle.textContent='測驗只會在你主動點選單字測驗時開始，不會由背誦流程自動觸發。';
+  else if(view==='quiz') studySubtitle.textContent='測驗可檢查單字意思、拼字、常見搭配、同義字、反義字與文章語境選字。';
   else studySubtitle.textContent='返回首頁可切換題庫、同步題庫與調整學習進度';
 }
 function updateCardFooterNote(){
   if(!cardFooterNote) return;
   cardFooterNote.textContent=isBrowseMode()
-    ? '左右箭頭可切換目前清單中的上一個或下一個單字。點卡片本體會從第 1 層進第 2 層，再進第 3 層；在第 3 層再點一次，會回到單字總覽。'
-    : '按右箭頭或「已讀」都會直接進到下一個單字的正面。點卡片本體時會從第 1 層進第 2 層，再進第 3 層；在第 3 層再點一次，會直接前進到下一個單字。';
+    ? '左右箭頭可切換目前清單中的上一個或下一個單字。點卡片本體會先揭露第一輪核心，再揭露第二輪與第三輪資料；在第 3 層再點一次，會回到單字總覽。'
+    : '按右箭頭或「已讀」都會直接進到下一個單字的正面。點卡片本體時會先揭露第一輪核心，再揭露第二輪與第三輪資料；在第 3 層再點一次，會直接前進到下一個單字。';
 }
 function showStudyModeSelection(){
   studyModeView.classList.remove('screen-hidden');
@@ -4429,14 +4154,28 @@ function shuffleList(list){
   }
   return copy;
 }
-function getQuizPool(scope=quizScope){
+const VALID_QUIZ_TYPES=new Set(['en_to_zh','zh_to_en','collocation','synonym','antonym','context','spelling']);
+function normalizeQuizType(type){ return VALID_QUIZ_TYPES.has(type) ? type : 'en_to_zh'; }
+function getQuizRoundLimit(type=quizType){ return normalizeQuizType(type)==='context' ? 5 : QUIZ_ROUND_LIMIT; }
+function isMeaningfulQuizText(value){
+  const text=String(value||'').trim();
+  if(!text || text==='—' || text==='-' || text==='--') return false;
+  return !/^(無|none|n\/a|na|not available)$/i.test(text);
+}
+function getQuizPool(scope=quizScope,type=quizType){
+  let base;
   if(scope==='today'){
     const ids=new Set([...(state.dailyNewIds||[]), ...(state.dailyAddedIds||[])]);
-    return words.filter(item=>ids.has(item.id));
+    base=words.filter(item=>ids.has(item.id));
+  }else if(scope==='difficult'){
+    base=words.filter(item=>isDifficultItem(item));
+  }else if(scope==='learned'){
+    base=words.filter(item=>(state.counts[item.id]||0)>0);
+  }else{
+    base=[...words];
   }
-  if(scope==='difficult') return words.filter(item=>isDifficultItem(item));
-  if(scope==='learned') return words.filter(item=>(state.counts[item.id]||0)>0);
-  return [...words];
+  const normalizedType=normalizeQuizType(type);
+  return base.filter(item=>isQuizItemEligible(item, normalizedType));
 }
 function getQuizScopeLabel(scope=quizScope){
   if(scope==='today') return '今日新字';
@@ -4445,6 +4184,10 @@ function getQuizScopeLabel(scope=quizScope){
   return '全部題庫';
 }
 function getQuizTypeLabel(type=quizType){
+  if(type==='collocation') return '常見搭配';
+  if(type==='synonym') return '同義字';
+  if(type==='antonym') return '反義字';
+  if(type==='context') return '文章語境選字';
   if(type==='zh_to_en') return '中文選英文';
   if(type==='spelling') return '拼字';
   return '英文選中文';
@@ -4455,8 +4198,113 @@ function getQuizWord(item){
 function getQuizMeaning(item){
   return getFieldByAliases(item,['定義','meaning','definition']) || '—';
 }
+function getQuizCollocation(item){
+  return getFieldByAliases(item,['常見搭配','搭配','collocation','用法','常見用法','usage']);
+}
+function getQuizSynonym(item){
+  return getFieldByAliases(item,['同義字','synonym','synonyms']);
+}
+function getQuizAntonym(item){
+  return getFieldByAliases(item,['反義字','antonym','antonyms']);
+}
+function getQuizExample(item){
+  return getFieldByAliases(item,['範例','例句','example','sentence']);
+}
+function getFirstQuizEntry(value){
+  const text=String(value||'').trim();
+  if(!text) return '';
+  const first=text.split(/\r?\n|[；;]/).map(part=>part.trim()).find(Boolean) || text;
+  return first.trim();
+}
+function cleanQuizEnglishOption(value){
+  let text=getFirstQuizEntry(value).replace(/\s+/g,' ').trim();
+  if(!text) return '';
+  text=text.split(/[：:]/)[0].trim();
+  const cjkIndex=text.search(/[\u3400-\u9fff]/);
+  if(cjkIndex>0) text=text.slice(0,cjkIndex).trim();
+  const englishStart=text.match(/^[A-Za-z][A-Za-z0-9\s'’\-.()/%]+/);
+  if(englishStart) text=englishStart[0].trim();
+  return text || getFirstQuizEntry(value);
+}
+function getQuizAnswerText(item,type=quizType){
+  const normalizedType=normalizeQuizType(type);
+  if(normalizedType==='zh_to_en' || normalizedType==='spelling' || normalizedType==='context') return getQuizWord(item);
+  if(normalizedType==='collocation') return cleanQuizEnglishOption(getQuizCollocation(item));
+  if(normalizedType==='synonym') return cleanQuizEnglishOption(getQuizSynonym(item));
+  if(normalizedType==='antonym') return cleanQuizEnglishOption(getQuizAntonym(item));
+  return getQuizMeaning(item);
+}
+function isQuizItemEligible(item,type=quizType){
+  const normalizedType=normalizeQuizType(type);
+  if(!isMeaningfulQuizText(getQuizWord(item))) return false;
+  if(normalizedType==='context') return doesContextContainQuizWord(item);
+  return isMeaningfulQuizText(getQuizAnswerText(item, normalizedType));
+}
 function normalizeQuizAnswer(value){
   return String(value||'').trim().toLowerCase().replace(/\s+/g,' ');
+}
+function normalizeQuizChoiceKey(value){
+  return normalizeQuizAnswer(value).replace(/[；;，,。.\s]+$/g,'');
+}
+function escapeRegExp(value){
+  return String(value||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+}
+function stripContextTranslation(value){
+  const text=String(value||'').trim();
+  if(!text) return '';
+  const candidates=text.split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
+  let line=candidates.find(part=>/[A-Za-z]/.test(part)) || candidates[0] || text;
+  const cjkIndex=line.search(/[\u3400-\u9fff]/);
+  if(cjkIndex>0 && /[A-Za-z]/.test(line.slice(0,cjkIndex))) line=line.slice(0,cjkIndex).trim();
+  return line.trim();
+}
+function getContextWordPattern(word){
+  const escaped=escapeRegExp(word);
+  return /^[A-Za-z][A-Za-z\s'-]*$/.test(word) ? new RegExp(`\\b${escaped}\\b`,'i') : new RegExp(escaped,'i');
+}
+function doesContextContainQuizWord(item){
+  const example=stripContextTranslation(getQuizExample(item));
+  const word=getQuizWord(item);
+  if(!isMeaningfulQuizText(example) || !isMeaningfulQuizText(word)) return false;
+  return getContextWordPattern(word).test(example);
+}
+function buildContextPrompt(item){
+  const example=stripContextTranslation(getQuizExample(item));
+  const word=getQuizWord(item);
+  if(!isMeaningfulQuizText(example)) return getQuizMeaning(item);
+  if(!isMeaningfulQuizText(word)) return example;
+  const pattern=getContextWordPattern(word);
+  const replaced=example.replace(pattern,'_____');
+  return replaced===example ? `${example}\n選出最符合語境的單字` : replaced;
+}
+function getQuizQuestionText(item,type=quizType){
+  const normalizedType=normalizeQuizType(type);
+  if(normalizedType==='zh_to_en') return getQuizMeaning(item);
+  if(normalizedType==='spelling') return `${getQuizMeaning(item)}\n${getSpellingHint(getQuizWord(item))}`;
+  if(normalizedType==='collocation') return getQuizWord(item);
+  if(normalizedType==='synonym') return `${getQuizWord(item)} 的同義字是？\n${getQuizMeaning(item)}`;
+  if(normalizedType==='antonym') return `${getQuizWord(item)} 的反義字是？\n${getQuizMeaning(item)}`;
+  if(normalizedType==='context') return buildContextPrompt(item);
+  return getQuizWord(item);
+}
+function getQuizPromptLabelByType(type=quizType){
+  const normalizedType=normalizeQuizType(type);
+  if(normalizedType==='zh_to_en') return '題目中文，選項英文';
+  if(normalizedType==='spelling') return '看中文拼英文';
+  if(normalizedType==='collocation') return '哪一個搭配正確？';
+  if(normalizedType==='synonym') return '選出同義字';
+  if(normalizedType==='antonym') return '選出反義字';
+  if(normalizedType==='context') return '依文章語境選字';
+  return '題目英文，選項中文';
+}
+function applyQuizQuestionSize(text,type=quizType){
+  if(!quizWordText) return;
+  const normalizedType=normalizeQuizType(type);
+  const plain=String(text||'').replace(/\s+/g,' ').trim();
+  quizWordText.classList.remove('is-long','is-very-long','is-context');
+  if(normalizedType==='context') quizWordText.classList.add('is-context');
+  if(plain.length>34 || plain.includes('\n')) quizWordText.classList.add('is-long');
+  if(plain.length>58 || normalizedType==='context') quizWordText.classList.add('is-very-long');
 }
 function getSpellingHint(value){
   return String(value||'').trim().split(/\s+/).map(part=>{
@@ -4467,25 +4315,71 @@ function getSpellingHint(value){
   }).join(' ');
 }
 function buildQuizChoices(answer,type=quizType){
-  const answerText=type==='zh_to_en' ? getQuizWord(answer) : getQuizMeaning(answer);
-  const seen=new Set([answerText]);
+  const normalizedType=normalizeQuizType(type);
+  if(normalizedType==='collocation') return buildCollocationQuizChoices(answer);
+  const answerText=getQuizAnswerText(answer, normalizedType);
+  const seen=new Set([normalizeQuizChoiceKey(answerText)]);
   const distractors=[];
   for(const item of shuffleList(words.filter(item=>item && item.id!==answer.id))){
-    const text=type==='zh_to_en' ? getQuizWord(item) : getQuizMeaning(item);
-    if(!text || seen.has(text)) continue;
-    seen.add(text);
+    const text=getQuizAnswerText(item, normalizedType);
+    const key=normalizeQuizChoiceKey(text);
+    if(!isMeaningfulQuizText(text) || seen.has(key)) continue;
+    seen.add(key);
     distractors.push({item, text, isAnswer:false});
     if(distractors.length>=3) break;
   }
   return shuffleList([{item:answer, text:answerText, isAnswer:true}, ...distractors]);
 }
+function getCollocationPrefix(value){
+  const words=String(value||'').trim().split(/\s+/).filter(Boolean);
+  if(words.length<2) return '';
+  const first=words[0].toLowerCase();
+  const stopWords=new Set(['a','an','the','of','in','on','at','for','with','by','to','from','is','are','was','were']);
+  if(stopWords.has(first)) return '';
+  if(first==='be' && words.length>=3) return words.slice(0, Math.min(3, words.length-1)).join(' ');
+  return words[0];
+}
+function buildCollocationQuizChoices(answer){
+  const answerText=getQuizAnswerText(answer,'collocation');
+  const seen=new Set([normalizeQuizChoiceKey(answerText)]);
+  const distractors=[];
+  const prefix=getCollocationPrefix(answerText);
+  if(prefix){
+    for(const item of shuffleList(words.filter(item=>item && item.id!==answer.id))){
+      const tail=cleanQuizEnglishOption(getQuizWord(item));
+      const text=`${prefix} ${tail}`.replace(/\s+/g,' ').trim();
+      const key=normalizeQuizChoiceKey(text);
+      if(!isMeaningfulQuizText(tail) || !isMeaningfulQuizText(text) || seen.has(key)) continue;
+      seen.add(key);
+      distractors.push({item, text, isAnswer:false});
+      if(distractors.length>=3) break;
+    }
+  }
+  if(distractors.length<3){
+    for(const item of shuffleList(words.filter(item=>item && item.id!==answer.id))){
+      const text=getQuizAnswerText(item,'collocation');
+      const key=normalizeQuizChoiceKey(text);
+      if(!isMeaningfulQuizText(text) || seen.has(key)) continue;
+      seen.add(key);
+      distractors.push({item, text, isAnswer:false});
+      if(distractors.length>=3) break;
+    }
+  }
+  return shuffleList([{item:answer, text:answerText, isAnswer:true}, ...distractors]);
+}
+function getQuizChoiceSub(item,type=quizType){
+  const normalizedType=normalizeQuizType(type);
+  const word=getQuizWord(item);
+  const meaning=getQuizMeaning(item);
+  if(normalizedType==='zh_to_en' || normalizedType==='context') return meaning;
+  if(normalizedType==='en_to_zh') return word;
+  return `${word}｜${meaning}`;
+}
 function renderQuizChoice(choice,index,{answered=false}={}){
   const text=choice?.text || '—';
   if(!answered) return `<button class="quiz-choice-btn" type="button" data-quiz-choice="${index}">${escapeHtml(text)}</button>`;
-  const word=getQuizWord(choice.item);
-  const meaning=getQuizMeaning(choice.item);
-  const main=quizType==='zh_to_en' ? word : meaning;
-  const sub=quizType==='zh_to_en' ? meaning : word;
+  const main=text;
+  const sub=getQuizChoiceSub(choice.item, quizType);
   return `<button class="quiz-choice-btn is-answered${choice.isAnswer ? ' is-correct' : ''}" type="button" data-quiz-choice="${index}" aria-disabled="true">
     <span class="quiz-choice-main">${escapeHtml(main)}</span>
     <span class="quiz-choice-sub">${escapeHtml(sub)}</span>
@@ -4505,49 +4399,58 @@ function resetQuizQuestion(){
   quizChoiceGrid.classList.remove('screen-hidden');
   quizPromptLabel.classList.remove('screen-hidden');
   quizWordText.classList.remove('screen-hidden');
+  nextQuizBtn.textContent='下一題';
   if(!quizItems.length){
     quizCurrent=null;
-    quizWordText.textContent=getQuizScopeLabel();
-    quizMetaText.textContent=`${getQuizScopeLabel()}目前沒有可測驗的單字。`;
+    quizWordText.textContent=getQuizTypeLabel();
+    applyQuizQuestionSize(quizWordText.textContent, quizType);
+    quizMetaText.textContent=`${getQuizScopeLabel()}目前沒有可用於「${getQuizTypeLabel()}」的單字。`;
     quizPromptLabel.textContent='題目';
     nextQuizBtn.disabled=true;
     return;
   }
   nextQuizBtn.disabled=false;
   quizCurrent=quizItems.shift();
-  const word=getQuizWord(quizCurrent);
-  const meaning=getQuizMeaning(quizCurrent);
   quizMetaText.textContent=`${getQuizScopeLabel()}｜${getQuizTypeLabel()}｜已答 ${quizTotal} 題｜答對 ${quizScore} 題`;
-  if(quizType==='zh_to_en'){
-    quizPromptLabel.textContent='題目中文，選項英文';
-    quizWordText.textContent=meaning;
-    quizChoices=buildQuizChoices(quizCurrent,'zh_to_en');
-    quizChoiceGrid.innerHTML=quizChoices.map((choice,index)=>renderQuizChoice(choice,index)).join('');
-    return;
-  }
   if(quizType==='spelling'){
-    quizPromptLabel.textContent='看中文拼英文';
-    quizWordText.textContent=`${meaning}\n${getSpellingHint(word)}`;
+    quizPromptLabel.textContent=getQuizPromptLabelByType(quizType);
+    const questionText=getQuizQuestionText(quizCurrent, quizType);
+    quizWordText.textContent=questionText;
+    applyQuizQuestionSize(questionText, quizType);
     quizChoiceGrid.classList.add('screen-hidden');
     quizSpellingBox.classList.remove('screen-hidden');
     window.setTimeout(()=>quizSpellingInput.focus(), 0);
     return;
   }
-  quizPromptLabel.textContent='題目英文，選項中文';
-  quizWordText.textContent=word;
-  quizChoices=buildQuizChoices(quizCurrent,'en_to_zh');
+  quizPromptLabel.textContent=getQuizPromptLabelByType(quizType);
+  const questionText=getQuizQuestionText(quizCurrent, quizType);
+  quizWordText.textContent=questionText;
+  applyQuizQuestionSize(questionText, quizType);
+  quizChoices=buildQuizChoices(quizCurrent, quizType);
   quizChoiceGrid.innerHTML=quizChoices.map((choice,index)=>renderQuizChoice(choice,index)).join('');
+}
+function buildWrongQuizRecord({item=quizCurrent,type=quizType,selected='',correct=''}={}){
+  return {
+    item,
+    type:normalizeQuizType(type),
+    typeLabel:getQuizTypeLabel(type),
+    word:getQuizWord(item),
+    meaning:getQuizMeaning(item),
+    question:getQuizQuestionText(item,type),
+    selected:String(selected||'').trim() || '未作答',
+    correct:String(correct||'').trim() || getQuizAnswerText(item,type)
+  };
 }
 function startQuiz(scope=quizScope,type=quizType){
   quizScope=scope;
-  quizType=type;
-  quizItems=shuffleList(getQuizPool(scope)).slice(0, QUIZ_ROUND_LIMIT);
+  quizType=normalizeQuizType(type);
+  quizItems=shuffleList(getQuizPool(scope, quizType)).slice(0, getQuizRoundLimit(quizType));
   quizScore=0;
   quizTotal=0;
   quizRoundTotal=quizItems.length;
   quizWrongItems=[];
   quizScopeSelect.value=scope;
-  quizTypeSelect.value=type;
+  quizTypeSelect.value=quizType;
   resetQuizQuestion();
 }
 function showQuizMode(){
@@ -4565,10 +4468,10 @@ function answerQuiz(choiceIndex, button){
   quizAnswered=true;
   quizTotal+=1;
   const selected=quizChoices[Number(choiceIndex)];
-  const answerText=quizType==='zh_to_en' ? getQuizWord(quizCurrent) : getQuizMeaning(quizCurrent);
+  const answerText=getQuizAnswerText(quizCurrent, quizType);
   const correct=!!selected?.isAnswer;
   if(correct) quizScore+=1;
-  else quizWrongItems.push(quizCurrent);
+  else quizWrongItems.push(buildWrongQuizRecord({selected:selected?.text || '未選到選項', correct:answerText}));
   quizChoiceGrid.innerHTML=quizChoices.map((choice,index)=>renderQuizChoice(choice,index,{answered:true})).join('');
   if(button && !correct){
     const wrongBtn=quizChoiceGrid.querySelector(`[data-quiz-choice="${Number(choiceIndex)}"]`);
@@ -4576,6 +4479,7 @@ function answerQuiz(choiceIndex, button){
   }
   quizResultText.textContent=correct ? '答對。' : `答錯，正確答案：${answerText}`;
   quizMetaText.textContent=`${getQuizScopeLabel()}｜${getQuizTypeLabel()}｜已答 ${quizTotal} 題｜答對 ${quizScore} 題`;
+  nextQuizBtn.textContent=quizTotal>=quizRoundTotal ? '查看成績' : '下一題';
 }
 function answerSpellingQuiz(){
   if(!quizCurrent || quizAnswered) return;
@@ -4585,13 +4489,31 @@ function answerSpellingQuiz(){
   const userText=quizSpellingInput.value;
   const correct=normalizeQuizAnswer(userText)===normalizeQuizAnswer(answerText);
   if(correct) quizScore+=1;
-  else quizWrongItems.push(quizCurrent);
+  else quizWrongItems.push(buildWrongQuizRecord({selected:userText || '空白', correct:answerText}));
   quizSpellingInput.readOnly=true;
   quizSpellingInput.classList.toggle('is-correct', correct);
   quizSpellingInput.classList.toggle('is-wrong', !correct);
   submitQuizSpellingBtn.disabled=true;
   quizResultText.textContent=correct ? '答對。' : `答錯，正確拼法：${answerText}`;
   quizMetaText.textContent=`${getQuizScopeLabel()}｜${getQuizTypeLabel()}｜已答 ${quizTotal} 題｜答對 ${quizScore} 題`;
+  nextQuizBtn.textContent=quizTotal>=quizRoundTotal ? '查看成績' : '下一題';
+}
+function renderWrongQuizRecord(record){
+  const item=record?.item || record;
+  const type=record?.type || quizType;
+  const typeLabel=record?.typeLabel || getQuizTypeLabel(type);
+  const word=record?.word || getQuizWord(item);
+  const meaning=record?.meaning || getQuizMeaning(item);
+  const question=record?.question || getQuizQuestionText(item,type);
+  const selected=record?.selected || '未作答';
+  const correct=record?.correct || getQuizAnswerText(item,type);
+  return `<li>
+    <span class="quiz-summary-word">${escapeHtml(typeLabel)}｜${escapeHtml(word)}</span>
+    <span class="quiz-summary-meaning">${escapeHtml(meaning)}</span>
+    <span class="quiz-summary-question">${escapeHtml(question)}</span>
+    <span class="quiz-summary-answer"><strong>你的答案：</strong>${escapeHtml(selected)}</span>
+    <span class="quiz-summary-answer"><strong>正確答案：</strong>${escapeHtml(correct)}</span>
+  </li>`;
 }
 function showQuizSummary(){
   quizAnswered=false;
@@ -4605,10 +4527,11 @@ function showQuizSummary(){
   quizResultText.textContent='';
   nextQuizBtn.disabled=true;
   quizMetaText.textContent=`${getQuizScopeLabel()}｜${getQuizTypeLabel()}｜本輪完成`;
-  quizSummaryScoreText.textContent=`${quizScore} / ${quizRoundTotal}`;
-  const uniqueWrong=[...new Map(quizWrongItems.map(item=>[getCardKey(item), item])).values()];
+  const percent=quizRoundTotal ? Math.round((quizScore / quizRoundTotal) * 100) : 0;
+  quizSummaryScoreText.textContent=`${quizScore} / ${quizRoundTotal}（${percent}%）`;
+  const uniqueWrong=[...new Map(quizWrongItems.map(record=>[`${record?.type || quizType}||${getCardKey(record?.item || record)}||${record?.question || ''}`, record])).values()];
   quizWrongList.innerHTML=uniqueWrong.length
-    ? uniqueWrong.map(item=>`<li><span class="quiz-summary-word">${escapeHtml(getQuizWord(item))}</span><span class="quiz-summary-meaning">${escapeHtml(getQuizMeaning(item))}</span></li>`).join('')
+    ? uniqueWrong.map(record=>renderWrongQuizRecord(record)).join('')
     : '<li>本輪沒有答錯的單字。</li>';
 }
 function goNextQuizQuestionIfAnswered(){
@@ -4641,7 +4564,7 @@ function refreshBrowseUIAfterStateChange(){
     showCardView();
   }
 }
-function showHomeScreen({keepSettings=false}={}){ homeScreen.classList.remove('screen-hidden'); studyScreen.classList.add('screen-hidden'); if(!keepSettings) hideSettingsPanel(); updateStudyDeckTitle(); renderHomeDeckCards(); setActiveAppTab('home'); if(hasCloudDeckIndexConfig()) reconcileCloudDeckIndex({silent:true}); }
+function showHomeScreen({keepSettings=false}={}){ homeScreen.classList.remove('screen-hidden'); studyScreen.classList.add('screen-hidden'); if(!keepSettings) hideSettingsPanel(); updateStudyDeckTitle(); renderHomeDeckCards(); setActiveAppTab('home'); }
 function enterStudyScreen(){ if(!words.length){ alert('請先成功載入題庫。'); return; } studyScreen.classList.remove('screen-hidden'); homeScreen.classList.add('screen-hidden'); updateStudyDeckTitle(); showStudyModeSelection(); }
 
 function saveActiveDeckId(){ if(currentDeckId) localStorage.setItem(ACTIVE_DECK_ID_KEY, currentDeckId); else localStorage.removeItem(ACTIVE_DECK_ID_KEY); }
@@ -4817,7 +4740,7 @@ function updateHeaderUI(){
   difficultBtns().forEach(btn => btn.disabled = !currentCard);
   updateDeckMetaText();
 }
-function renderCard(){ if(!currentCard) return; wordText.textContent=currentCard['單字']||'—'; frontPhoneticText.textContent=currentCard['音標']||''; quickWordText.textContent=currentCard['單字']||'—'; quickMeaningText.textContent=currentCard['定義']||'—'; quickExampleText.textContent=currentCard['範例']||'—'; backWordText.textContent=currentCard['單字']||'—'; posText.textContent=currentCard['詞性']||'—'; meaningText.textContent=currentCard['定義']||'—'; usageText.textContent=currentCard['用法']||'—'; wordFormText.textContent=currentCard['詞性變化']||'—'; tenseText.textContent=currentCard['三態（現在式-過去式-過去分詞）']||'—'; vingText.textContent=currentCard['現在分詞（V-ing）']||'—'; collocationText.textContent=currentCard['常見搭配']||'—'; relatedText.textContent=currentCard['相關字']||currentCard['關鍵字']||'—'; synonymsText.textContent=currentCard['同義字']||'—'; antonymsText.textContent=currentCard['反義字']||'—'; exampleText.textContent=currentCard['範例']||'—'; updateHeaderUI(); updateDifficultButtonUI(); }
+function renderCard(){ if(!currentCard) return; const wordValue=getFieldByAliases(currentCard,['單字','word','Word'])||'—'; const posValue=getFieldByAliases(currentCard,['詞性','part of speech'])||'—'; const meaningValue=getFieldByAliases(currentCard,['定義','meaning','definition'])||'—'; const usageValue=getFieldByAliases(currentCard,['用法','常見用法','usage'])||'—'; const collocationValue=getFieldByAliases(currentCard,['常見搭配','搭配','collocation'])||usageValue||'—'; const quickUseValue=collocationValue && collocationValue!=='—' ? collocationValue : usageValue; wordText.textContent=wordValue; frontPhoneticText.textContent=currentCard['音標']||''; quickWordText.textContent=wordValue; quickPosText.textContent=posValue; quickMeaningText.textContent=meaningValue; quickUsageText.textContent=quickUseValue||'—'; backWordText.textContent=wordValue; posText.textContent=posValue; meaningText.textContent=meaningValue; usageText.textContent=usageValue; wordFormText.textContent=currentCard['詞性變化']||'—'; tenseText.textContent=currentCard['三態（現在式-過去式-過去分詞）']||'—'; vingText.textContent=currentCard['現在分詞（V-ing）']||'—'; collocationText.textContent=collocationValue||'—'; relatedText.textContent=currentCard['相關字']||currentCard['關鍵字']||'—'; synonymsText.textContent=currentCard['同義字']||'—'; antonymsText.textContent=currentCard['反義字']||'—'; exampleText.textContent=currentCard['範例']||'—'; updateHeaderUI(); updateDifficultButtonUI(); }
 function showStage(stage){ cardStage=stage; frontFace.classList.toggle('hidden',stage!==1); quickFace.classList.toggle('hidden',stage!==2); backFace.classList.toggle('hidden',stage!==3); if(stage===3 && backScroll) backScroll.scrollTop=0; updateCardFooterNote(); }
 function cardNextStage(){ if(!currentCard) return; if(cardStage===1) showStage(2); else if(cardStage===2) showStage(3); else if(isBrowseMode()){ renderWordList(); showWordListView(studySessionType); } else markSeenOnce(); }
 function pushHistory(cardObj){ if(historyIndex<history.length-1) history=history.slice(0,historyIndex+1); history.push(cardObj); historyIndex=history.length-1; }
@@ -4925,7 +4848,7 @@ async function fetchDeckCsv(url){
     throw new Error(err?.message || '網址同步失敗');
   }
 }
-function clearCardUI(){ currentCard=null; words=[]; groups=[]; history=[]; historyIndex=-1; activeBrowseItems=[]; activeBrowseIndex=-1; quizItems=[]; quizCurrent=null; studySessionType='memorize'; if(cardProgressText) cardProgressText.textContent='0/0'; wordText.textContent='請先載入題庫'; frontPhoneticText.textContent=''; quickWordText.textContent='—'; quickMeaningText.textContent='—'; quickExampleText.textContent='—'; backWordText.textContent='—'; posText.textContent='—'; meaningText.textContent='—'; usageText.textContent='—'; wordFormText.textContent='—'; tenseText.textContent='—'; vingText.textContent='—'; collocationText.textContent='—'; relatedText.textContent='—'; synonymsText.textContent='—'; antonymsText.textContent='—'; exampleText.textContent='—'; if(wordListContainer) wordListContainer.innerHTML=''; if(wordListEmpty) wordListEmpty.classList.add('hidden'); if(quizView) quizView.classList.add('screen-hidden'); showStage(1); updateHeaderUI(); updateDifficultButtonUI(); updateStudyDeckTitle(); updateCardFooterNote(); }
+function clearCardUI(){ currentCard=null; words=[]; groups=[]; history=[]; historyIndex=-1; activeBrowseItems=[]; activeBrowseIndex=-1; quizItems=[]; quizCurrent=null; studySessionType='memorize'; if(cardProgressText) cardProgressText.textContent='0/0'; wordText.textContent='請先載入題庫'; frontPhoneticText.textContent=''; quickWordText.textContent='—'; quickPosText.textContent='—'; quickMeaningText.textContent='—'; quickUsageText.textContent='—'; backWordText.textContent='—'; posText.textContent='—'; meaningText.textContent='—'; usageText.textContent='—'; wordFormText.textContent='—'; tenseText.textContent='—'; vingText.textContent='—'; collocationText.textContent='—'; relatedText.textContent='—'; synonymsText.textContent='—'; antonymsText.textContent='—'; exampleText.textContent='—'; if(wordListContainer) wordListContainer.innerHTML=''; if(wordListEmpty) wordListEmpty.classList.add('hidden'); if(quizView) quizView.classList.add('screen-hidden'); showStage(1); updateHeaderUI(); updateDifficultButtonUI(); updateStudyDeckTitle(); updateCardFooterNote(); }
 function startApp(items,sourceLabel=''){ words=sortWordsByWordId(items); if(!validateColumns(words)){ statusText.textContent='載入失敗：缺少必要欄位'; alert('CSV 至少需要包含：word_id、單字、定義'); return; } buildGroups(); loadState(); normalizeState(); maybeDailyReset(); const initialAddedCount=ensureInitialCardsAvailable(); saveWordsToStorage(); const estimatedQuestions=getEstimatedTotalQuestions(words); const gidNote=(currentDeckMeta?.type==='google_sheet' && currentDeckMeta?.url && !getGoogleSheetInfo(currentDeckMeta.url)?.hasExplicitGid) ? '；注意：目前網址未帶 gid，系統是用預設第一個工作表（gid=0）同步' : ''; statusText.textContent=`載入成功：共 ${words.length} 筆單字，估計 ${estimatedQuestions} 題${sourceLabel ? '（'+sourceLabel+'）' : ''}${gidNote}${initialAddedCount ? `；已自動加入 ${initialAddedCount} 個新字，可直接開始學習。` : '。請按「開始學習」進入模式選擇。'}`; history=[]; historyIndex=-1; activeBrowseItems=[]; activeBrowseIndex=-1; showNextGeneratedCard(); updateStudyDeckTitle(); updateCardFooterNote(); renderHomeDeckCards(); }
 function upsertCurrentDeckMeta(){ if(!currentDeckMeta) return; const idx=decks.findIndex(d=>d.id===currentDeckMeta.id); if(idx>=0) decks[idx]={...decks[idx], ...currentDeckMeta}; else decks.push(currentDeckMeta); saveDecks({markUpdated:true, autoPush:true}); renderDeckSelect(); updateDeckMetaText(); }
 function getDeckById(id){ return decks.find(d=>d.id===id) || null; }
@@ -5070,7 +4993,7 @@ function addDeck(){
   deckSelect.value='';
   fillDeckForm(null);
   deckMetaText.textContent=`已新增題庫：${deck.name}。欄位已清空；若要載入或修改，請從上方題庫選單選擇。`;
-  statusText.textContent=`已新增題庫：${deck.name}。若同步設定正常，題庫清單會自動同步到其他裝置；請從題庫選單選擇後載入。`;
+  statusText.textContent=`已新增題庫：${deck.name}。題庫清單已保存在目前裝置；請從題庫選單選擇後載入。`;
 }
 function updateDeck(){
   const id=deckSelect.value || currentDeckId;
@@ -5149,9 +5072,7 @@ saveCloudConfigBtn.addEventListener('click', async ()=>{
   cloudConfig.scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput.value) || DEFAULT_CLOUD_SCRIPT_URL;
   cloudConfig.userKey=String(cloudUserKeyInput.value||'').trim() || DEFAULT_CLOUD_USER_KEY;
   saveCloudConfig();
-  statusText.textContent='已儲存 Apps Script URL 與 userKey，正在同步題庫清單...';
-  const synced=await reconcileCloudDeckIndex({silent:false, autoLoadSingle:true});
-  if(!synced) statusText.textContent='已儲存 Apps Script URL 與 userKey；目前沒有新的雲端題庫清單。';
+  statusText.textContent='已儲存同步設定。題庫清單仍保存在目前裝置；雲端只同步目前題庫的學習進度。';
 });
 if(managerCollapseBtn){
   managerCollapseBtn.addEventListener('click', ()=>{
@@ -5327,7 +5248,7 @@ function setupManagerSections(){
 
   wrapManageSection(cloudSection,{
     title:'雲端同步',
-    note:'來源：Google Apps Script + Google Sheets，只同步學習進度與題庫清單，不存放 CSV 題庫內容。',
+    note:'來源：Google Apps Script + Google Sheets，只同步目前題庫的學習進度。',
     bodyId:'cloudSyncSectionBody'
   });
   wrapManageSection(deckSection,{
@@ -5365,14 +5286,14 @@ document.addEventListener('keydown', e=>{
   if(learningHelpModal && !learningHelpModal.classList.contains('hidden')) closeLearningHelpModal();
   if(!helpModal.classList.contains('hidden')) closeHelpModal();
 });
-window.addEventListener('focus', ()=>{ const resetChanged=maybeDailyReset(); if(resetChanged){ updateHeaderUI(); if(isBrowseMode()) refreshBrowseUIAfterStateChange(); } if(hasCloudDeckIndexConfig()) reconcileCloudDeckIndex({silent:true}); });
-window.addEventListener('beforeunload', ()=>{ if(canAutoPushNow()) pushCloudProgressSilent(); if(hasCloudDeckIndexConfig()) pushCloudDeckIndexSilent(); });
+window.addEventListener('focus', ()=>{ const resetChanged=maybeDailyReset(); if(resetChanged){ updateHeaderUI(); if(isBrowseMode()) refreshBrowseUIAfterStateChange(); } });
+window.addEventListener('beforeunload', ()=>{ if(canAutoPushNow()) pushCloudProgressSilent(); });
 enterStudyBtn.addEventListener('click', ()=>enterStudyScreen());
 backHomeBtn.addEventListener('click', ()=>showHomeScreen());
 memorizeModeBtn.addEventListener('click', ()=>startMemorizeMode());
 deckWordModeBtn.addEventListener('click', ()=>openBrowseMode('browse_all'));
 difficultWordModeBtn.addEventListener('click', ()=>openBrowseMode('browse_difficult'));
-quizModeBtn.addEventListener('click', ()=>showQuizMode());
+if(quizModeBtn) quizModeBtn.addEventListener('click', ()=>showQuizMode());
 backToStudyModesBtn.addEventListener('click', ()=>showStudyModeSelection());
 backToStudyModesFromQuizBtn.addEventListener('click', ()=>showStudyModeSelection());
 quizScopeSelect.addEventListener('change', ()=>startQuiz(quizScopeSelect.value || 'today', quizType));
@@ -5394,7 +5315,7 @@ quizSpellingInput.addEventListener('keydown', e=>{
   else answerSpellingQuiz();
 });
 restartQuizBtn.addEventListener('click', ()=>startQuiz(quizScope, quizType));
-nextQuizBtn.addEventListener('click', ()=>resetQuizQuestion());
+nextQuizBtn.addEventListener('click', ()=>{ if(quizAnswered) goNextQuizQuestionIfAnswered(); });
 quizQuestionCard.addEventListener('click', e=>{
   if(e.target.closest('button, input, select, textarea, a')) return;
   goNextQuizQuestionIfAnswered();
@@ -5418,7 +5339,7 @@ familiarityBtns().forEach(btn=>btn.addEventListener('click', e=>{
 
 speakWordBtn.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(currentCard['單字']); });
 speakQuickWordBtn.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(currentCard['單字']); });
-speakQuickExampleBtn.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(currentCard['範例']); });
+speakQuickUsageBtn.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(getFieldByAliases(currentCard,['常見搭配','搭配','用法','常見用法','usage','collocation'])); });
 speakWordBtnBack.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(currentCard['單字']); });
 speakExampleBtn.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(currentCard['範例']); });
 
@@ -5438,7 +5359,6 @@ async function bootstrap(){
   applyTheme(getSavedTheme());
   cloudConfig=loadCloudConfig();
   repairCloudConfigDefaults({persist:true});
-  deckRegistryMeta=loadDeckRegistryMeta();
   loadDecks();
   renderDeckSelect();
   setupManagerSections();
@@ -5456,7 +5376,7 @@ async function bootstrap(){
     updateDeckMetaText();
     updateCloudMetaText();
   }
-  reconcileCloudDeckIndex({silent:true, autoLoadSingle:true}).then(()=>renderDeckSelect()).catch(err=>console.warn('啟動時同步題庫清單失敗', err));
+  await loadSingleDeckIfIdle();
 }
 
 updateHeaderUI();
