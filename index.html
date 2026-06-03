@@ -3000,7 +3000,7 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
 
         <div class="manage-section cloud-sync-section">
           <div class="manage-section-title">雲端同步</div>
-                    <div class="sync-help-note"><strong>同步說明</strong>題庫清單只保存在目前裝置；雲端只同步目前題庫的學習進度。題庫內容仍由 CSV / Google Sheets 網址提供。</div>
+                    <div class="sync-help-note"><strong>同步說明</strong>題庫清單與目前題庫進度會自動同步到雲端；其他裝置開啟或回到頁面時會自動套用同一份題庫清單與進度。</div>
           <div class="deck-grid">
             <input id="cloudScriptUrlInput" type="text" placeholder="貼上 Google Apps Script Web App 網址" value="https://script.google.com/macros/s/AKfycbyhK5odtV6a13q3m0RHOA4gyMaW2Y9LS1RuOB26p34v7_bq2Jv0drGdbcuKWp10PwZe/exec" class="wide" />
             <input id="cloudUserKeyInput" type="text" placeholder="同步帳號代號（例如：lee_vocab）" value="aj_vocab" class="wide" />
@@ -3243,8 +3243,8 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
       <div class="help-item"><strong>載入題庫</strong>載入目前選到的題庫。若本機已有快取，會先載入快取。</div>
       <div class="help-item"><strong>重新同步</strong>重新從原本的 Google Sheets 或 CSV 網址抓最新題庫資料。</div>
             <div class="help-item"><strong>增加新字 +5</strong>每次最多新增 5 個單字；會同時受「今日剩餘額度」與「新字池剩餘空位」限制。</div>
-      <div class="help-item"><strong>儲存同步設定</strong>保存 Apps Script URL 與同步代號；不會修改題庫清單或題庫內容。</div>
-      <div class="help-item"><strong>上傳 / 下載雲端進度</strong>只同步目前已載入題庫的學習進度。</div>
+      <div class="help-item"><strong>儲存同步設定</strong>保存 Apps Script URL 與同步代號；題庫清單與進度會依此自動同步。</div>
+      <div class="help-item"><strong>上傳 / 下載雲端進度</strong>保留作為手動保險；一般情況會自動同步目前題庫的學習進度。</div>
       <div class="help-item"><strong>重設進度</strong>重設目前題庫的學習進度；若同步設定可用，會覆蓋雲端進度。</div>
       <div class="help-item"><strong>清除本機資料</strong>清除目前題庫存在本機的題庫快取與進度，雲端進度不會被刪除。</div>
       <div class="help-item"><strong>匯出進度</strong>把目前題庫的進度匯出成 JSON 備份檔。</div>
@@ -3261,6 +3261,7 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
 
 <script>
 const APP_DECKS_INDEX_KEY='flashcard_decks_index_v1';
+const DECK_INDEX_SYNC_META_KEY='flashcard_deck_index_sync_meta_v1';
 const ACTIVE_DECK_ID_KEY='flashcard_active_deck_id_v1';
 const CLOUD_SYNC_CONFIG_KEY='flashcard_cloud_sync_config_v1';
 const THEME_PREF_KEY='flashcard_theme_pref_v1';
@@ -3318,6 +3319,12 @@ let cloudConfig=defaultCloudConfig();
 let cloudAutoSyncTimer=null;
 let cloudAutoSyncInFlight=false;
 let cloudAutoSyncQueued=false;
+let deckIndexSyncMeta=defaultDeckIndexSyncMeta();
+let deckIndexAutoSyncTimer=null;
+let deckIndexAutoSyncInFlight=false;
+let deckIndexAutoSyncQueued=false;
+let cloudResumeSyncTimer=null;
+let cloudResumeSyncInFlight=false;
 let deckLoadRequestSeq=0;
 
 let words=[], groups=[], currentCard=null, history=[], historyIndex=-1, cardStage=1;
@@ -3340,6 +3347,7 @@ function getNewPoolRemainingQuota(){ return Math.max(0, getDailyCap() - getActiv
 function getAddableNewWordCount(){ return Math.max(0, Math.min(getDailyRemainingQuota(), getNewPoolRemainingQuota())); }
 function defaultCloudConfig(){ return {scriptUrl:DEFAULT_CLOUD_SCRIPT_URL, userKey:DEFAULT_CLOUD_USER_KEY, lastPushAt:'', lastPullAt:''}; }
 function defaultSyncMeta(){ return {dirty:false,autoPushBlocked:false,blockReason:''}; }
+function defaultDeckIndexSyncMeta(){ return {dirty:false,updatedAt:'',lastPushAt:'',lastPullAt:'',autoPushBlocked:false,blockReason:''}; }
 function currentDeckDataKey(){ return currentDeckId ? `deck_data_${currentDeckId}` : ''; }
 function currentDeckSyncMetaKey(){ return currentDeckId ? `deck_sync_meta_${currentDeckId}` : ''; }
 
@@ -3354,6 +3362,7 @@ function isRetiredDeck(deck){
 }
 function normalizeDeckList(list){
   const seen=new Set();
+  const seenIds=new Set();
   const normalized=[];
   (Array.isArray(list)?list:[]).forEach(deck=>{
     const item=normalizeDeckMeta(deck);
@@ -3361,13 +3370,39 @@ function normalizeDeckList(list){
     const key=String(item.cloudDeckKey || item.normalizedUrl || item.url || item.id || '').trim();
     if(!key || seen.has(key)) return;
     seen.add(key);
+    let id=String(item.id||'').trim();
+    if(!id || seenIds.has(id)) id=stableDeckIdFromKey(key);
+    while(seenIds.has(id)) id=`${stableDeckIdFromKey(key)}_${seenIds.size}`;
+    seenIds.add(id);
+    item.id=id;
     normalized.push(item);
   });
   return normalized;
 }
-function saveDecks(){
+function stableDeckIdFromKey(key){
+  const source=String(key||'deck').trim() || 'deck';
+  let hash=2166136261;
+  for(let i=0;i<source.length;i+=1){
+    hash^=source.charCodeAt(i);
+    hash=Math.imul(hash, 16777619) >>> 0;
+  }
+  return `deck_${hash.toString(36)}`;
+}
+function saveDecks({markUpdated=false, autoPush=false}={}){
   decks=normalizeDeckList(decks);
+  if(markUpdated){
+    deckIndexSyncMeta={
+      ...defaultDeckIndexSyncMeta(),
+      ...deckIndexSyncMeta,
+      dirty:true,
+      autoPushBlocked:false,
+      blockReason:'',
+      updatedAt:new Date().toISOString()
+    };
+  }
   localStorage.setItem(APP_DECKS_INDEX_KEY, JSON.stringify(decks));
+  saveDeckIndexSyncMeta();
+  if(autoPush) scheduleCloudDeckIndexAutoPush();
 }
 function loadDecks(){
   try{
@@ -3381,7 +3416,7 @@ function loadDecks(){
   }
 }
 async function loadSingleDeckIfIdle(){
-  if(currentDeckId || words.length || !Array.isArray(decks) || decks.length!==1) return false;
+  if(currentDeckId || words.length || !Array.isArray(decks) || !decks.length) return false;
   await loadDeckById(decks[0].id);
   return true;
 }
@@ -3404,6 +3439,28 @@ function loadCloudConfig(){
 }
 function saveCloudConfig(){
   localStorage.setItem(CLOUD_SYNC_CONFIG_KEY, JSON.stringify(cloudConfig));
+  updateCloudMetaText();
+}
+function loadDeckIndexSyncMeta(){
+  deckIndexSyncMeta=defaultDeckIndexSyncMeta();
+  try{
+    const raw=localStorage.getItem(DECK_INDEX_SYNC_META_KEY);
+    if(!raw) return;
+    const parsed=JSON.parse(raw);
+    deckIndexSyncMeta={
+      dirty:!!parsed?.dirty,
+      updatedAt:String(parsed?.updatedAt||'').trim(),
+      lastPushAt:String(parsed?.lastPushAt||'').trim(),
+      lastPullAt:String(parsed?.lastPullAt||'').trim(),
+      autoPushBlocked:!!parsed?.autoPushBlocked,
+      blockReason:String(parsed?.blockReason||'').trim()
+    };
+  }catch(e){
+    deckIndexSyncMeta=defaultDeckIndexSyncMeta();
+  }
+}
+function saveDeckIndexSyncMeta(){
+  localStorage.setItem(DECK_INDEX_SYNC_META_KEY, JSON.stringify(deckIndexSyncMeta||defaultDeckIndexSyncMeta()));
   updateCloudMetaText();
 }
 function loadSyncMeta(){
@@ -3505,12 +3562,18 @@ function updateCloudMetaText(){
   const lastPush=cloudConfig.lastPushAt ? new Date(cloudConfig.lastPushAt).toLocaleString('zh-TW') : '尚未上傳';
   const lastPull=cloudConfig.lastPullAt ? new Date(cloudConfig.lastPullAt).toLocaleString('zh-TW') : '尚未下載';
   const syncStatus=syncMeta?.autoPushBlocked ? `已暫停（${getSyncBlockReasonText() || '手動處理中'}）` : (syncMeta?.dirty ? '待上傳' : '正常');
+  const indexLastPush=deckIndexSyncMeta?.lastPushAt ? new Date(deckIndexSyncMeta.lastPushAt).toLocaleString('zh-TW') : '尚未上傳';
+  const indexLastPull=deckIndexSyncMeta?.lastPullAt ? new Date(deckIndexSyncMeta.lastPullAt).toLocaleString('zh-TW') : '尚未下載';
+  const indexStatus=deckIndexSyncMeta?.autoPushBlocked ? '已暫停' : (deckIndexSyncMeta?.dirty ? '待上傳' : '正常');
   if(cloudMetaText) cloudMetaText.textContent=`同步網址：${urlText}
 同步代號：${userText}
 目前題庫：${deckText}
-最近上傳：${lastPush}
-最近下載：${lastPull}
-自動上傳：${syncStatus}`;
+題庫清單上傳：${indexLastPush}
+題庫清單下載：${indexLastPull}
+題庫清單同步：${indexStatus}
+進度上傳：${lastPush}
+進度下載：${lastPull}
+進度自動上傳：${syncStatus}`;
 }
 function repairCloudConfigDefaults({persist=false}={}){
   if(CLOUD_SYNC_DISABLED) return false;
@@ -3562,6 +3625,12 @@ function hasCloudSyncConfig(){
   const scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
   const userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
   return !!(words.length && currentDeckId && scriptUrl && userKey);
+}
+function hasCloudDeckIndexConfig(){
+  if(CLOUD_SYNC_DISABLED) return false;
+  const scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
+  const userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
+  return !!(scriptUrl && userKey);
 }
 function ensureCloudReady(){
   if(CLOUD_SYNC_DISABLED){
@@ -3701,6 +3770,199 @@ function cloudJsonp(url){
     script.src=`${url}${sep}callback=${encodeURIComponent(callbackName)}`;
     document.head.appendChild(script);
   });
+}
+function buildDeckIndexPayload(){
+  const updatedAt=deckIndexSyncMeta?.updatedAt || new Date().toISOString();
+  deckIndexSyncMeta.updatedAt=updatedAt;
+  return {
+    version:1,
+    updatedAt,
+    decks:normalizeDeckList(decks)
+  };
+}
+async function fetchCloudDeckIndex(){
+  const scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
+  const userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
+  if(!scriptUrl || !userKey) return null;
+  const url=`${scriptUrl}?action=loadDeckIndex&userKey=${encodeURIComponent(userKey)}`;
+  const result=await cloudJsonp(url);
+  if(!result || result.ok!==true || !result.payload) return null;
+  return {
+    version:Number(result.payload.version || 0) || 0,
+    updatedAt:String(result.payload.updatedAt || '').trim(),
+    decks:normalizeDeckList(result.payload.decks || [])
+  };
+}
+async function verifyCloudDeckIndexSave(payload){
+  const scriptUrl=normalizeCloudScriptUrl(cloudConfig.scriptUrl);
+  const userKey=String(cloudConfig.userKey || '').trim();
+  const verifyUrl=`${scriptUrl}?action=loadDeckIndex&userKey=${encodeURIComponent(userKey)}`;
+  const targetUpdatedAt=String(payload?.index?.updatedAt || '').trim();
+  const started=Date.now();
+  let lastError='';
+  let attempts=0;
+  await new Promise(r=>setTimeout(r, 1000));
+  while(Date.now()-started < 18000){
+    attempts += 1;
+    try{
+      const result=await cloudJsonp(verifyUrl);
+      const remoteUpdatedAt=String(result?.payload?.updatedAt || '').trim();
+      if(result && result.ok===true && (!targetUpdatedAt || remoteUpdatedAt===targetUpdatedAt)){
+        return result;
+      }
+      lastError=result?.message || '雲端尚未讀到剛上傳的題庫清單';
+    }catch(err){
+      lastError=err?.message || String(err);
+    }
+    const waitMs = attempts <= 2 ? 1000 : 1800;
+    await new Promise(r=>setTimeout(r, waitMs));
+  }
+  throw new Error(lastError || '雲端題庫清單寫入後驗證失敗');
+}
+async function postCloudDeckIndexSave(payload){
+  let lastError=null;
+  for(let attempt=1; attempt<=2; attempt++){
+    try{
+      await submitCloudPostForm('saveDeckIndex', payload);
+      const verified=await verifyCloudDeckIndexSave(payload);
+      if(attempt > 1 && verified && typeof verified === 'object') verified.retried = true;
+      return verified;
+    }catch(err){
+      lastError=err;
+      const message=String(err?.message||err||'');
+      const shouldRetry=attempt===1 && /尚未讀到|驗證失敗|同步逾時|寫入後/.test(message);
+      if(!shouldRetry) throw err;
+      await new Promise(r=>setTimeout(r, 1000));
+    }
+  }
+  throw lastError || new Error('雲端題庫清單寫入後驗證失敗');
+}
+async function pushCloudDeckIndexSilent(){
+  if(!hasCloudDeckIndexConfig() || !deckIndexSyncMeta?.dirty || deckIndexSyncMeta?.autoPushBlocked) return false;
+  if(deckIndexAutoSyncInFlight){
+    deckIndexAutoSyncQueued=true;
+    return false;
+  }
+  cloudConfig.scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput?.value || cloudConfig.scriptUrl);
+  cloudConfig.userKey=String(cloudUserKeyInput?.value || cloudConfig.userKey).trim();
+  deckIndexAutoSyncInFlight=true;
+  try{
+    const payload={
+      userKey:cloudConfig.userKey,
+      index:buildDeckIndexPayload()
+    };
+    await postCloudDeckIndexSave(payload);
+    deckIndexSyncMeta={
+      ...defaultDeckIndexSyncMeta(),
+      ...deckIndexSyncMeta,
+      dirty:false,
+      updatedAt:payload.index.updatedAt,
+      lastPushAt:new Date().toISOString(),
+      autoPushBlocked:false,
+      blockReason:''
+    };
+    saveDeckIndexSyncMeta();
+    return true;
+  }catch(err){
+    console.error('自動題庫清單同步失敗', err);
+    return false;
+  }finally{
+    deckIndexAutoSyncInFlight=false;
+    if(deckIndexAutoSyncQueued){
+      deckIndexAutoSyncQueued=false;
+      scheduleCloudDeckIndexAutoPush();
+    }
+  }
+}
+function scheduleCloudDeckIndexAutoPush(){
+  if(!hasCloudDeckIndexConfig() || !deckIndexSyncMeta?.dirty || deckIndexSyncMeta?.autoPushBlocked) return;
+  if(deckIndexAutoSyncTimer) clearTimeout(deckIndexAutoSyncTimer);
+  deckIndexAutoSyncTimer=setTimeout(()=>{
+    deckIndexAutoSyncTimer=null;
+    pushCloudDeckIndexSilent();
+  }, 1000);
+}
+function applyCloudDeckIndex(index,{silent=false}={}){
+  const previousId=currentDeckId;
+  const previousCloudKey=String(currentDeckMeta?.cloudDeckKey || getDeckById(previousId)?.cloudDeckKey || '').trim();
+  decks=normalizeDeckList(index?.decks || []);
+  deckIndexSyncMeta={
+    ...defaultDeckIndexSyncMeta(),
+    ...deckIndexSyncMeta,
+    dirty:false,
+    updatedAt:String(index?.updatedAt || new Date().toISOString()).trim(),
+    lastPullAt:new Date().toISOString(),
+    autoPushBlocked:false,
+    blockReason:''
+  };
+  saveDecks();
+  saveDeckIndexSyncMeta();
+  const retainedByKey=previousCloudKey ? decks.find(d=>d.cloudDeckKey===previousCloudKey) : null;
+  const retainedById=previousId ? getDeckById(previousId) : null;
+  const retained=retainedByKey || retainedById || null;
+  if(previousId && !retained){
+    currentDeckId='';
+    currentDeckMeta=null;
+    syncMeta=defaultSyncMeta();
+    saveActiveDeckId();
+    clearCardUI();
+  }else if(retained){
+    currentDeckMeta=retained;
+    currentDeckId=retained.id;
+    loadSyncMeta();
+    saveActiveDeckId();
+  }
+  renderDeckSelect();
+  fillDeckForm(currentDeckMeta || getDeckById(deckSelect.value) || null);
+  updateDeckMetaText();
+  updateCloudMetaText();
+  updateStudyDeckTitle();
+  renderHomeDeckCards();
+  if(!silent) statusText.textContent='已套用雲端題庫清單。';
+}
+async function reconcileCloudDeckIndexOnLoad({silent=false}={}){
+  if(!hasCloudDeckIndexConfig()) return false;
+  try{
+    const remoteIndex=await fetchCloudDeckIndex();
+    const localDecks=normalizeDeckList(decks);
+    const localTs=Date.parse(String(deckIndexSyncMeta?.updatedAt||'')) || 0;
+    const remoteTs=Date.parse(String(remoteIndex?.updatedAt||'')) || 0;
+    if(remoteIndex){
+      const remoteDecks=normalizeDeckList(remoteIndex.decks || []);
+      const listsDiffer=JSON.stringify(localDecks)!==JSON.stringify(remoteDecks);
+      if(!deckIndexSyncMeta?.dirty || !localTs || remoteTs>=localTs){
+        if(listsDiffer || remoteTs){
+          applyCloudDeckIndex(remoteIndex,{silent});
+          return listsDiffer;
+        }
+        deckIndexSyncMeta={
+          ...defaultDeckIndexSyncMeta(),
+          ...deckIndexSyncMeta,
+          dirty:false,
+          lastPullAt:new Date().toISOString(),
+          updatedAt:String(remoteIndex.updatedAt||deckIndexSyncMeta.updatedAt||'')
+        };
+        saveDeckIndexSyncMeta();
+        return false;
+      }
+      if(deckIndexSyncMeta?.dirty && localTs>remoteTs){
+        await pushCloudDeckIndexSilent();
+      }
+      return false;
+    }
+    if(localDecks.length){
+      if(!deckIndexSyncMeta.updatedAt){
+        deckIndexSyncMeta.updatedAt=new Date().toISOString();
+        deckIndexSyncMeta.dirty=true;
+        saveDeckIndexSyncMeta();
+      }
+      await pushCloudDeckIndexSilent();
+    }
+    return false;
+  }catch(err){
+    console.warn('題庫清單雲端同步失敗', err);
+    return false;
+  }
 }
 async function pushCloudProgress(){
   if(!ensureCloudReady()) return;
@@ -4987,12 +5249,12 @@ function addDeck(){
     return;
   }
   decks.push(deck);
-  saveDecks();
+  saveDecks({markUpdated:true, autoPush:true});
   renderDeckSelect();
   deckSelect.value='';
   fillDeckForm(null);
   deckMetaText.textContent=`已新增題庫：${deck.name}。欄位已清空；若要載入或修改，請從上方題庫選單選擇。`;
-  statusText.textContent=`已新增題庫：${deck.name}。題庫清單已保存在目前裝置；請從題庫選單選擇後載入。`;
+  statusText.textContent=`已新增題庫：${deck.name}。題庫清單會自動同步到其他裝置。`;
 }
 function updateDeck(){
   const id=deckSelect.value || currentDeckId;
@@ -5015,9 +5277,9 @@ function deleteDeck(){
   localStorage.removeItem(`deck_data_${deck.id}`);
   localStorage.removeItem(`deck_state_${deck.id}`);
   localStorage.removeItem(`deck_sync_meta_${deck.id}`);
-  decks=decks.filter(d=>d.id!==deck.id); saveDecks();
+  decks=decks.filter(d=>d.id!==deck.id); saveDecks({markUpdated:true, autoPush:true});
   if(currentDeckId===deck.id){ currentDeckId=''; currentDeckMeta=null; syncMeta=defaultSyncMeta(); saveActiveDeckId(); clearCardUI(); }
-  renderDeckSelect(); fillDeckForm(null); updateDeckMetaText(); statusText.textContent=`已刪除題庫：${deck.name}`;
+  renderDeckSelect(); fillDeckForm(null); updateDeckMetaText(); statusText.textContent=`已刪除題庫：${deck.name}。題庫清單會自動同步到其他裝置。`;
 }
 addDailyLimitBtn.addEventListener('click', ()=>addDailyLimit());
 resetBtn.addEventListener('click', async ()=>{
@@ -5071,7 +5333,13 @@ saveCloudConfigBtn.addEventListener('click', async ()=>{
   cloudConfig.scriptUrl=normalizeCloudScriptUrl(cloudScriptUrlInput.value) || DEFAULT_CLOUD_SCRIPT_URL;
   cloudConfig.userKey=String(cloudUserKeyInput.value||'').trim() || DEFAULT_CLOUD_USER_KEY;
   saveCloudConfig();
-  statusText.textContent='已儲存同步設定。題庫清單仍保存在目前裝置；雲端只同步目前題庫的學習進度。';
+  statusText.textContent='已儲存同步設定。題庫清單與目前題庫進度會自動同步。';
+  if(decks.length){
+    deckIndexSyncMeta.dirty=true;
+    deckIndexSyncMeta.updatedAt=deckIndexSyncMeta.updatedAt || new Date().toISOString();
+    saveDeckIndexSyncMeta();
+    scheduleCloudDeckIndexAutoPush();
+  }
 });
 if(managerCollapseBtn){
   managerCollapseBtn.addEventListener('click', ()=>{
@@ -5354,18 +5622,70 @@ progressFile.addEventListener('change', async e=>{
   normalizeState(); maybeDailyReset(); history = []; historyIndex = -1; syncMeta.dirty=true; syncMeta.autoPushBlocked=true; syncMeta.blockReason='local_import'; saveState({autoPush:false, markUpdated:true}); saveSyncMeta(); statusText.textContent='已成功匯入目前題庫的進度檔，雲端未變更；若要覆蓋雲端，請手動按「上傳雲端進度」。'; progressFile.value = ''; showNextGeneratedCard();
 });
 
+function scheduleCloudResumeSync(delay=300){
+  if(CLOUD_SYNC_DISABLED) return;
+  if(cloudResumeSyncTimer) clearTimeout(cloudResumeSyncTimer);
+  cloudResumeSyncTimer=setTimeout(()=>{
+    cloudResumeSyncTimer=null;
+    syncCloudOnResume();
+  }, delay);
+}
+async function syncCloudOnResume(){
+  if(cloudResumeSyncInFlight) return;
+  cloudResumeSyncInFlight=true;
+  try{
+    const deckListChanged=await reconcileCloudDeckIndexOnLoad({silent:true});
+    const currentStillExists=currentDeckId && getDeckById(currentDeckId);
+    if(!currentStillExists){
+      currentDeckId='';
+      currentDeckMeta=null;
+      syncMeta=defaultSyncMeta();
+      saveActiveDeckId();
+      if(decks.length){
+        await loadDeckById(decks[0].id);
+      }else{
+        clearCardUI();
+      }
+      return;
+    }
+    if(deckListChanged){
+      const deck=getDeckById(currentDeckId);
+      if(deck){
+        setCurrentDeck(deck);
+        await loadDeckById(deck.id,{forceSync:true});
+        return;
+      }
+    }
+    if(words.length){
+      await reconcileCloudProgressOnLoad();
+    }else if(currentDeckId){
+      await loadDeckById(currentDeckId);
+    }
+  }finally{
+    cloudResumeSyncInFlight=false;
+  }
+}
+function installCloudAutoSyncListeners(){
+  window.addEventListener('focus', ()=>scheduleCloudResumeSync(300));
+  document.addEventListener('visibilitychange', ()=>{
+    if(!document.hidden) scheduleCloudResumeSync(300);
+  });
+}
+
 async function bootstrap(){
   applyTheme(getSavedTheme());
   cloudConfig=loadCloudConfig();
   repairCloudConfigDefaults({persist:true});
+  loadDeckIndexSyncMeta();
   loadDecks();
   renderDeckSelect();
   setupManagerSections();
   updateCloudMetaText();
   setManagerPanelCollapsed(false);
   showHomeScreen();
+  await reconcileCloudDeckIndexOnLoad({silent:true});
   const activeId=loadActiveDeckId();
-  const initialDeckId=(activeId && getDeckById(activeId)) ? activeId : (decks.length===1 ? decks[0].id : '');
+  const initialDeckId=(activeId && getDeckById(activeId)) ? activeId : (decks.length ? decks[0].id : '');
   if(initialDeckId){
     await loadDeckById(initialDeckId);
   }else{
@@ -5376,6 +5696,7 @@ async function bootstrap(){
     updateCloudMetaText();
   }
   await loadSingleDeckIfIdle();
+  installCloudAutoSyncListeners();
 }
 
 updateHeaderUI();
