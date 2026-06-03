@@ -3035,7 +3035,7 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
         <div class="study-mode-grid">
           <button id="memorizeModeBtn" class="study-mode-btn" type="button">
             <strong>三輪背誦卡</strong>
-            <span>依新字池與舊字規則抽題；先猜英文，再看核心意思與搭配，最後看例句、同反義與字族。</span>
+            <span>依新字池與舊字規則抽題；先猜英文，再看核心意思與常見用法，最後看例句、同反義與字族。</span>
           </button>
           <button id="deckWordModeBtn" class="study-mode-btn" type="button">
             <strong>題庫單字卡</strong>
@@ -3069,7 +3069,7 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
           <select id="quizTypeSelect">
             <option value="en_to_zh">英文選中文</option>
             <option value="zh_to_en">中文選英文</option>
-            <option value="collocation">常見搭配</option>
+            <option value="collocation">常見用法</option>
             <option value="synonym">同義字</option>
             <option value="antonym">反義字</option>
             <option value="context">文章語境選字</option>
@@ -3152,7 +3152,7 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
                   <div class="quick-value" id="quickMeaningText">—</div>
                 </div>
                 <div class="quick-block">
-                  <div class="quick-label">常見搭配/用法</div>
+                  <div class="quick-label">常見用法</div>
                   <div class="example-row">
                     <div class="quick-value" id="quickUsageText">—</div>
                     <button class="speak" id="speakQuickUsageBtn">🔊</button>
@@ -3185,8 +3185,7 @@ body.theme-dark .quiz-choice-btn.is-answered:not(.is-correct):not(.is-wrong) .qu
                 <div class="round-title">第一輪核心</div>
                 <div class="field"><div class="label">詞性</div><div class="value" id="posText">—</div></div>
                 <div class="field"><div class="label">定義</div><div class="value" id="meaningText">—</div></div>
-                <div class="field"><div class="label">常見搭配</div><div class="value" id="collocationText">—</div></div>
-                <div class="field"><div class="label">用法</div><div class="value" id="usageText">—</div></div>
+                <div class="field"><div class="label">常見用法</div><div class="value" id="usageText">—</div></div>
                 <div class="round-title">第二輪：閱讀與選項判斷</div>
                 <div class="field"><div class="label">範例</div><div class="example-row"><div class="value" id="exampleText">—</div><button class="speak" id="speakExampleBtn">🔊</button></div></div>
                 <div class="field"><div class="label">同義字</div><div class="value" id="synonymsText">—</div></div>
@@ -3307,7 +3306,7 @@ const wordText=el('wordText'), frontPhoneticText=el('frontPhoneticText');
 const quickWordText=el('quickWordText'), quickPosText=el('quickPosText'), quickMeaningText=el('quickMeaningText'), quickUsageText=el('quickUsageText');
 const backWordText=el('backWordText');
 const speakWordBtn=el('speakWordBtn'), speakQuickWordBtn=el('speakQuickWordBtn'), speakQuickUsageBtn=el('speakQuickUsageBtn'), speakWordBtnBack=el('speakWordBtnBack'), speakExampleBtn=el('speakExampleBtn');
-const posText=el('posText'), meaningText=el('meaningText'), usageText=el('usageText'), wordFormText=el('wordFormText'), tenseText=el('tenseText'), vingText=el('vingText'), collocationText=el('collocationText'), relatedText=el('relatedText'), synonymsText=el('synonymsText'), antonymsText=el('antonymsText'), exampleText=el('exampleText');
+const posText=el('posText'), meaningText=el('meaningText'), usageText=el('usageText'), wordFormText=el('wordFormText'), tenseText=el('tenseText'), vingText=el('vingText'), relatedText=el('relatedText'), synonymsText=el('synonymsText'), antonymsText=el('antonymsText'), exampleText=el('exampleText');
 const cardProgressText=el('cardProgressText');
 const studyModeView=el('studyModeView'), wordListView=el('wordListView'), cardView=el('cardView');
 const memorizeModeBtn=el('memorizeModeBtn'), deckWordModeBtn=el('deckWordModeBtn'), difficultWordModeBtn=el('difficultWordModeBtn'), quizModeBtn=el('quizModeBtn'), backToStudyModesBtn=el('backToStudyModesBtn'), backToStudyModesFromQuizBtn=el('backToStudyModesFromQuizBtn');
@@ -4070,7 +4069,7 @@ function updateStudySubtitleText(view='mode'){
   if(view==='mode') studySubtitle.textContent='請先選擇這次要使用的學習模式';
   else if(view==='list') studySubtitle.textContent=`目前模式：${getBrowseModeLabel()}。點選任一單字後，可進入三層單字卡。`;
   else if(view==='card' && isBrowseMode()) studySubtitle.textContent=`目前模式：${getBrowseModeLabel()}。在第 3 層再點一次，會回到單字總覽。`;
-  else if(view==='quiz') studySubtitle.textContent='測驗可檢查單字意思、拼字、常見搭配、同義字、反義字與文章語境選字。';
+  else if(view==='quiz') studySubtitle.textContent='測驗可檢查單字意思、拼字、常見用法、同義字、反義字與文章語境選字。';
   else studySubtitle.textContent='返回首頁可切換題庫、同步題庫與調整學習進度';
 }
 function updateCardFooterNote(){
@@ -4184,7 +4183,7 @@ function getQuizScopeLabel(scope=quizScope){
   return '全部題庫';
 }
 function getQuizTypeLabel(type=quizType){
-  if(type==='collocation') return '常見搭配';
+  if(type==='collocation') return '常見用法';
   if(type==='synonym') return '同義字';
   if(type==='antonym') return '反義字';
   if(type==='context') return '文章語境選字';
@@ -4199,7 +4198,7 @@ function getQuizMeaning(item){
   return getFieldByAliases(item,['定義','meaning','definition']) || '—';
 }
 function getQuizCollocation(item){
-  return getFieldByAliases(item,['常見搭配','搭配','collocation','用法','常見用法','usage']);
+  return getFieldByAliases(item,['常見用法','usage','常見搭配','搭配','collocation','用法']);
 }
 function getQuizSynonym(item){
   return getFieldByAliases(item,['同義字','synonym','synonyms']);
@@ -4291,7 +4290,7 @@ function getQuizPromptLabelByType(type=quizType){
   const normalizedType=normalizeQuizType(type);
   if(normalizedType==='zh_to_en') return '題目中文，選項英文';
   if(normalizedType==='spelling') return '看中文拼英文';
-  if(normalizedType==='collocation') return '哪一個搭配正確？';
+  if(normalizedType==='collocation') return '哪一個用法正確？';
   if(normalizedType==='synonym') return '選出同義字';
   if(normalizedType==='antonym') return '選出反義字';
   if(normalizedType==='context') return '依文章語境選字';
@@ -4740,7 +4739,7 @@ function updateHeaderUI(){
   difficultBtns().forEach(btn => btn.disabled = !currentCard);
   updateDeckMetaText();
 }
-function renderCard(){ if(!currentCard) return; const wordValue=getFieldByAliases(currentCard,['單字','word','Word'])||'—'; const posValue=getFieldByAliases(currentCard,['詞性','part of speech'])||'—'; const meaningValue=getFieldByAliases(currentCard,['定義','meaning','definition'])||'—'; const usageValue=getFieldByAliases(currentCard,['用法','常見用法','usage'])||'—'; const collocationValue=getFieldByAliases(currentCard,['常見搭配','搭配','collocation'])||usageValue||'—'; const quickUseValue=collocationValue && collocationValue!=='—' ? collocationValue : usageValue; wordText.textContent=wordValue; frontPhoneticText.textContent=currentCard['音標']||''; quickWordText.textContent=wordValue; quickPosText.textContent=posValue; quickMeaningText.textContent=meaningValue; quickUsageText.textContent=quickUseValue||'—'; backWordText.textContent=wordValue; posText.textContent=posValue; meaningText.textContent=meaningValue; usageText.textContent=usageValue; wordFormText.textContent=currentCard['詞性變化']||'—'; tenseText.textContent=currentCard['三態（現在式-過去式-過去分詞）']||'—'; vingText.textContent=currentCard['現在分詞（V-ing）']||'—'; collocationText.textContent=collocationValue||'—'; relatedText.textContent=currentCard['相關字']||currentCard['關鍵字']||'—'; synonymsText.textContent=currentCard['同義字']||'—'; antonymsText.textContent=currentCard['反義字']||'—'; exampleText.textContent=currentCard['範例']||'—'; updateHeaderUI(); updateDifficultButtonUI(); }
+function renderCard(){ if(!currentCard) return; const wordValue=getFieldByAliases(currentCard,['單字','word','Word'])||'—'; const posValue=getFieldByAliases(currentCard,['詞性','part of speech'])||'—'; const meaningValue=getFieldByAliases(currentCard,['定義','meaning','definition'])||'—'; const usageValue=getFieldByAliases(currentCard,['常見用法','usage','常見搭配','搭配','collocation','用法'])||'—'; wordText.textContent=wordValue; frontPhoneticText.textContent=currentCard['音標']||''; quickWordText.textContent=wordValue; quickPosText.textContent=posValue; quickMeaningText.textContent=meaningValue; quickUsageText.textContent=usageValue; backWordText.textContent=wordValue; posText.textContent=posValue; meaningText.textContent=meaningValue; usageText.textContent=usageValue; wordFormText.textContent=currentCard['詞性變化']||'—'; tenseText.textContent=currentCard['三態（現在式-過去式-過去分詞）']||'—'; vingText.textContent=currentCard['現在分詞（V-ing）']||'—'; relatedText.textContent=currentCard['相關字']||currentCard['關鍵字']||'—'; synonymsText.textContent=currentCard['同義字']||'—'; antonymsText.textContent=currentCard['反義字']||'—'; exampleText.textContent=currentCard['範例']||'—'; updateHeaderUI(); updateDifficultButtonUI(); }
 function showStage(stage){ cardStage=stage; frontFace.classList.toggle('hidden',stage!==1); quickFace.classList.toggle('hidden',stage!==2); backFace.classList.toggle('hidden',stage!==3); if(stage===3 && backScroll) backScroll.scrollTop=0; updateCardFooterNote(); }
 function cardNextStage(){ if(!currentCard) return; if(cardStage===1) showStage(2); else if(cardStage===2) showStage(3); else if(isBrowseMode()){ renderWordList(); showWordListView(studySessionType); } else markSeenOnce(); }
 function pushHistory(cardObj){ if(historyIndex<history.length-1) history=history.slice(0,historyIndex+1); history.push(cardObj); historyIndex=history.length-1; }
@@ -4848,7 +4847,7 @@ async function fetchDeckCsv(url){
     throw new Error(err?.message || '網址同步失敗');
   }
 }
-function clearCardUI(){ currentCard=null; words=[]; groups=[]; history=[]; historyIndex=-1; activeBrowseItems=[]; activeBrowseIndex=-1; quizItems=[]; quizCurrent=null; studySessionType='memorize'; if(cardProgressText) cardProgressText.textContent='0/0'; wordText.textContent='請先載入題庫'; frontPhoneticText.textContent=''; quickWordText.textContent='—'; quickPosText.textContent='—'; quickMeaningText.textContent='—'; quickUsageText.textContent='—'; backWordText.textContent='—'; posText.textContent='—'; meaningText.textContent='—'; usageText.textContent='—'; wordFormText.textContent='—'; tenseText.textContent='—'; vingText.textContent='—'; collocationText.textContent='—'; relatedText.textContent='—'; synonymsText.textContent='—'; antonymsText.textContent='—'; exampleText.textContent='—'; if(wordListContainer) wordListContainer.innerHTML=''; if(wordListEmpty) wordListEmpty.classList.add('hidden'); if(quizView) quizView.classList.add('screen-hidden'); showStage(1); updateHeaderUI(); updateDifficultButtonUI(); updateStudyDeckTitle(); updateCardFooterNote(); }
+function clearCardUI(){ currentCard=null; words=[]; groups=[]; history=[]; historyIndex=-1; activeBrowseItems=[]; activeBrowseIndex=-1; quizItems=[]; quizCurrent=null; studySessionType='memorize'; if(cardProgressText) cardProgressText.textContent='0/0'; wordText.textContent='請先載入題庫'; frontPhoneticText.textContent=''; quickWordText.textContent='—'; quickPosText.textContent='—'; quickMeaningText.textContent='—'; quickUsageText.textContent='—'; backWordText.textContent='—'; posText.textContent='—'; meaningText.textContent='—'; usageText.textContent='—'; wordFormText.textContent='—'; tenseText.textContent='—'; vingText.textContent='—'; relatedText.textContent='—'; synonymsText.textContent='—'; antonymsText.textContent='—'; exampleText.textContent='—'; if(wordListContainer) wordListContainer.innerHTML=''; if(wordListEmpty) wordListEmpty.classList.add('hidden'); if(quizView) quizView.classList.add('screen-hidden'); showStage(1); updateHeaderUI(); updateDifficultButtonUI(); updateStudyDeckTitle(); updateCardFooterNote(); }
 function startApp(items,sourceLabel=''){ words=sortWordsByWordId(items); if(!validateColumns(words)){ statusText.textContent='載入失敗：缺少必要欄位'; alert('CSV 至少需要包含：word_id、單字、定義'); return; } buildGroups(); loadState(); normalizeState(); maybeDailyReset(); const initialAddedCount=ensureInitialCardsAvailable(); saveWordsToStorage(); const estimatedQuestions=getEstimatedTotalQuestions(words); const gidNote=(currentDeckMeta?.type==='google_sheet' && currentDeckMeta?.url && !getGoogleSheetInfo(currentDeckMeta.url)?.hasExplicitGid) ? '；注意：目前網址未帶 gid，系統是用預設第一個工作表（gid=0）同步' : ''; statusText.textContent=`載入成功：共 ${words.length} 筆單字，估計 ${estimatedQuestions} 題${sourceLabel ? '（'+sourceLabel+'）' : ''}${gidNote}${initialAddedCount ? `；已自動加入 ${initialAddedCount} 個新字，可直接開始學習。` : '。請按「開始學習」進入模式選擇。'}`; history=[]; historyIndex=-1; activeBrowseItems=[]; activeBrowseIndex=-1; showNextGeneratedCard(); updateStudyDeckTitle(); updateCardFooterNote(); renderHomeDeckCards(); }
 function upsertCurrentDeckMeta(){ if(!currentDeckMeta) return; const idx=decks.findIndex(d=>d.id===currentDeckMeta.id); if(idx>=0) decks[idx]={...decks[idx], ...currentDeckMeta}; else decks.push(currentDeckMeta); saveDecks({markUpdated:true, autoPush:true}); renderDeckSelect(); updateDeckMetaText(); }
 function getDeckById(id){ return decks.find(d=>d.id===id) || null; }
@@ -5339,7 +5338,7 @@ familiarityBtns().forEach(btn=>btn.addEventListener('click', e=>{
 
 speakWordBtn.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(currentCard['單字']); });
 speakQuickWordBtn.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(currentCard['單字']); });
-speakQuickUsageBtn.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(getFieldByAliases(currentCard,['常見搭配','搭配','用法','常見用法','usage','collocation'])); });
+speakQuickUsageBtn.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(getFieldByAliases(currentCard,['常見用法','usage','常見搭配','搭配','collocation','用法'])); });
 speakWordBtnBack.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(currentCard['單字']); });
 speakExampleBtn.addEventListener('click', e=>{ e.stopPropagation(); if(currentCard) speak(currentCard['範例']); });
 
