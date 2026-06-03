@@ -5515,12 +5515,12 @@ function setupManagerSections(){
 
   wrapManageSection(cloudSection,{
     title:'雲端同步',
-    note:'來源：Google Apps Script + Google Sheets，只同步目前題庫的學習進度。',
+    note:'來源：Google Apps Script + Google Sheets，自動同步題庫清單與目前題庫進度。',
     bodyId:'cloudSyncSectionBody'
   });
   wrapManageSection(deckSection,{
     title:'題庫管理',
-    note:'來源：可手動貼 GitHub CSV 網址或 Google Sheets 連結；此區管理目前裝置已加入的題庫。',
+    note:'來源：可手動貼 GitHub CSV 網址或 Google Sheets 連結；此區管理跨裝置共用題庫清單。',
     bodyId:'deckManagementSectionBody'
   });
   cloudSection.dataset.settingsSection='sync';
